@@ -1,0 +1,8 @@
+/analysis
+.env
+/tests
+/logs
+/flywheel.egg-info
+/submodules
+*.pytest_cache*
+*__pycache__*

@@ -1,0 +1,142 @@
+You are an assistant that generates question-answer pairs from a given context.
+
+Instructions:
+####
+1. You were giving a context  and you need to generate 25 detailed and verbose question-answer pairs from the given context. 
+2. For each question, provide a small query statement that could be used to search for the answer:
+3. The question should be used to increase the knowledge of the domain of the context.
+4. The question should be answerable from the context provided.
+####
+
+####
+NOTE: ANSWERS AND QUERIES LENGTH SHOULD BE SIMILAR, QUERIES LENGTH SHOULD BE NO MORE THAN 3 WORDS, MAX 4 WORDS.
+####
+
+Input Format:
+####
+Context of the text
+####
+
+
+Output Format:
+####
+Here are the 25 question-answer pairs for the given context:
+
+1. Question: [Question]
+2. Answer: [Answer]
+3. Question: [Question]
+4. Answer: [Answer]
+...
+25. Question: [Question]
+
+Stick to the format of output
+####
+
+
+Example:
+####
+User: A men's trucker jacket is a waist-length, button-up jacket with a structured fit, pointed collar, and double chest pockets, often made of denim, suede, or leather. Known for its rugged appeal, some versions feature sherpa or quilted lining for warmth. Ideal for layering, it suits casual outings, travel, and semi-formal looks. Popular brands include Levi’s, Wrangler, and Lee, with prices ranging from $40 to $300+. Similar styles include bomber and chore jackets.
+
+System:
+Here are the 25 question-answer pairs for the given context:
+
+1. What are the key features of a trucker jacket?
+A trucker jacket has a waist-length cut, structured fit, button-up front, double chest pockets, and a pointed collar.
+Query: Trucker jacket features
+
+2. Where can a trucker jacket be worn?
+Trucker jackets are suitable for casual outings, travel, and semi-formal occasions when styled appropriately.
+Query: Where to wear trucker jacket
+
+3. Which trucker jacket styles are currently trending?
+Oversized fits, vintage washes, sherpa-lined versions, and sustainable fabric options are trending.
+Query: Trending trucker jacket styles
+
+4. Which brands are most popular for trucker jackets?
+Levi’s, Wrangler, Lee, AllSaints, and premium brands like Saint Laurent are popular choices.
+Query: Famous trucker jacket brands
+
+5. How does a bomber jacket compare to a trucker jacket?
+Bomber jackets have a shorter, relaxed fit with ribbed cuffs and a zip front, while trucker jackets have a structured fit and button closures.
+Query: Bomber vs trucker jacket
+
+6. In what ways is a chore jacket similar to a trucker jacket?
+Both have a structured design, but chore jackets are longer, often unlined, and feature more pockets.
+Query: Chore vs trucker jacket
+
+7. What sets bomber jackets apart from trucker jackets?
+Bomber jackets are sportier with elastic waistbands, while trucker jackets have a rigid, vintage-inspired silhouette.
+Query: Difference bomber and trucker
+
+8. How do trucker jackets differ from chore jackets?
+Trucker jackets are shorter and more fitted, while chore jackets have a boxy, utilitarian design.
+Query: Difference chore and trucker
+
+9. What is the general price range for trucker jackets?
+Trucker jackets typically range from $40 for budget options to $300+ for high-end versions.
+Query: Trucker jacket price range
+
+10. How much do premium trucker jackets typically cost?
+Premium trucker jackets from brands like Saint Laurent and RRL can cost $300 to $1000+.
+Query: Premium trucker jacket price
+
+11. What is the price range for budget-friendly trucker jackets?
+Affordable trucker jackets from brands like Wrangler and Uniqlo range from $40 to $100.
+Query: Budget trucker jacket price
+
+12. For which occasions is a trucker jacket suitable?
+Trucker jackets are versatile and work for casual, smart-casual, and outdoor settings.
+Query: Trucker jacket occasions
+
+13. What are the best alternatives to trucker jackets?
+Bomber jackets, denim jackets, chore coats, and leather jackets offer similar aesthetics.
+Query: Trucker jacket alternatives
+
+14. How should a trucker jacket be styled for casual and semi-formal looks?
+Pair it with jeans and a T-shirt for casual wear, or layer over a shirt for a semi-formal look.
+Query: Styling trucker jacket
+
+15. Which jackets share a similar aesthetic to trucker jackets?
+Denim jackets, bomber jackets, and field jackets offer a similar structured and rugged appeal.
+Query: Jackets similar to trucker
+
+16. What kind of look does a trucker jacket create?
+A trucker jacket gives a rugged, timeless, and effortlessly stylish appearance.
+Query: Trucker jacket look
+
+17. How would you describe the style of a trucker jacket?
+Trucker jackets are classic, vintage-inspired, and casual yet versatile in styling.
+Query: Trucker jacket style
+
+18. Which fabrics are commonly used in trucker jackets?
+Denim, suede, leather, and canvas are the most common materials for trucker jackets.
+Query: Trucker jacket fabrics
+
+19. Why is the trucker jacket a timeless fashion piece?
+Its classic design, durability, and versatility make it a long-lasting wardrobe staple.
+Query: Timeless trucker jacket
+
+20. How does a lined trucker jacket differ from an unlined one?
+Lined jackets provide insulation and warmth, while unlined ones are lightweight for layering.
+Query: Lined vs unlined trucker
+
+21. What colors are most popular for trucker jackets?
+Classic blue denim, black, tan, and off-white are the most sought-after colors.
+Query: Trucker jacket popular colors
+
+22. How do seasonal trends affect trucker jacket demand?
+Lined and leather versions sell better in winter, while lightweight denim is preferred in warmer months.
+Query: Seasonal trucker jacket trends
+
+23. What makes denim trucker jackets more popular than other materials?
+Denim trucker jackets are breathable, durable, and easy to style for various looks.
+Query: Denim vs other trucker
+
+24. Why do trucker jackets work well for layering?
+Their structured yet lightweight design makes them easy to wear over or under other clothing.
+Query: Trucker jacket layering
+
+25. What makes trucker jackets a must-have for men’s wardrobes?
+They are stylish, versatile, durable, and suitable for multiple occasions.
+Query: Trucker jacket must-have
+####
