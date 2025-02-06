@@ -25,7 +25,7 @@ setup(
     description="Collecting Relevant Data for your Domain from World Knowledge",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/gikagraph-ai/flywheel",  # Replace with the actual GitHub repo
+    url="https://github.com/Aadey-Shah-Gika/GiKA-Flywheel",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

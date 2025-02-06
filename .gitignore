@@ -6,3 +6,4 @@
 /submodules
 *.pytest_cache*
 *__pycache__*
+conftest.py
