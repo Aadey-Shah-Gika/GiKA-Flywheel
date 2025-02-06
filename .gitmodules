@@ -1,3 +1,3 @@
 [submodule "submodules/browser"]
-	path = browser
+	path = submodules/browser
 	url = git@github.com:knowledge-hive/Browser.git
