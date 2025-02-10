@@ -1,0 +1,186 @@
+CONTEXT: 
+
+This delicious Biscoff Cheesecake recipe features a buttery Biscoff cookie crust, and a creamy Biscoff cheesecake filling. It’s topped with melted Biscoff cookie butter, and Biscoff cookie crumbs, which makes for a stunning and tasty dessert
+
+QUERIES: 
+
+Biscoff Cheesecake ingredients
+Biscoff Cheesecake crust
+Biscoff cheesecake texture
+Biscoff Cheesecake toppings
+Biscoff cookie butter purpose
+Biscoff cookie crumbs role
+Biscoff Cheesecake appearance
+Biscoff Cheesecake flavor
+Biscoff Cheesecake occasion
+Biscoff Cheesecake crust flavor
+Biscoff cookie significance
+Biscoff cookie crumbs texture
+Biscoff cheesecake filling texture
+Biscoff cookie butter purpose
+Biscoff Cheesecake serving size
+Biscoff Cheesecake crust appearance
+Biscoff cookie advantage
+Biscoff cheesecake filling flavor
+Biscoff Cheesecake storage
+Biscoff Cheesecake crust texture
+Biscoff cookie disadvantage
+
+=========================================================================================================
+=========================================================================================================
+
+CONTEXT: 
+
+Mount Everest is the highest mountain in the world. It is located in the Himalayas on the border between Nepal and the Tibet Autonomous Region of China. The mountain's peak reaches an elevation of 8,848 meters (29,029 feet) above sea level.
+
+QUERIES: 
+
+Highest mountain in the world
+Location of Mount Everest
+Elevation of Mount Everest
+Mountain range of Mount Everest
+Border of Mount Everest
+Height of Mount Everest in meters
+Height of Mount Everest in feet
+Country of Mount Everest
+Region of China of Mount Everest
+Significance of Mount Everest's elevation
+Comparison of Mount Everest's elevation
+Geographical location of Mount Everest
+Highest point on Earth
+Climate of Mount Everest
+Impact of Mount Everest's elevation on climate
+Accessibility of Mount Everest
+Significance of Mount Everest's location
+Impact of Mount Everest's elevation on accessibility
+Impact of Mount Everest's location on accessibility
+Popularity of Mount Everest
+Significance of Mount Everest's popularity
+Impact of Mount Everest's elevation on popularity
+Impact of Mount Everest's location on popularity
+Cultural significance of Mount Everest
+
+=========================================================================================================
+=========================================================================================================
+
+CONTEXT: 
+
+At its core, a co ord set for women (short for 'coordinated') is a two-piece outfit designed to be worn together, creating a harmonious and, well, coordinated look. These sets can range from casual ensembles perfect for a day out to more formal attire suitable for the office or a night on the town.
+
+QUERIES: 
+
+Co ord set purpose
+Co ord meaning
+Co ord set pieces
+Co ord set occasions
+Co ord set harmony
+Co ord set versatility
+Co ord set benefits
+Co ord set casual styling
+Co ord set fabrics
+Co ord set office wear
+Co ord set occasions
+Co ord set formal styling
+Co ord set vs matching outfit
+Co ord set outdoor wear
+Co ord set lengths
+Co ord set mixing
+Co ord set work benefits
+Co ord set formal wear
+Co ord set colors
+Co ord set casual styling
+Co ord set vs suit
+Co ord set night in
+Co ord set patterns
+Co ord set formal styling
+
+=========================================================================================================
+=========================================================================================================
+
+CONTEXT: 
+
+Lightweight Gaming Mouse -The Ant Esports GM700 Wireless gaming mouse features a honeycomb shell that weighs only 90 grams, which is light but still durable. The honeycomb shell helps reduce weight to protect your wrist when you are gaming or working.
+
+QUERIES: 
+
+Ant Esports GM700 weight
+Honeycomb shell feature
+Honeycomb shell design
+Lightweight design benefits
+Honeycomb shell weight contribution
+Honeycomb shell purpose
+Ant Esports GM700 weight comparison
+Lightweight design performance
+Ant Esports GM700 material
+Ant Esports GM700 weight comparison wireless
+Lightweight design advantage
+Honeycomb shell durability
+Reduced weight purpose
+Ant Esports GM700 durability comparison
+Reduced weight benefits
+Honeycomb shell design impact
+Ant Esports GM700 difference
+Ant Esports GM700 weight distribution
+Even weight distribution advantage
+
+=========================================================================================================
+=========================================================================================================
+
+CONTEXT: 
+
+The Wakeup Mushy Sofa provides a comfortable and supportive seating experience with its plush cushions and sturdy frame | Plush and comfortable: The Wakeup Mushy Sofa provides a luxurious seating experience with its soft and plush cushions, perfect for relaxation and lounging, Soft and supple upholstery for added luxury.
+
+QUERIES: 
+
+Wakeup Mushy Sofa comfort
+Wakeup Mushy Sofa cushions
+Wakeup Mushy Sofa purpose
+Wakeup Mushy Sofa upholstery
+Wakeup Mushy Sofa aesthetic
+Wakeup Mushy Sofa support
+Wakeup Mushy Sofa frame
+Wakeup Mushy Sofa comfort design
+Wakeup Mushy Sofa cushion material
+Wakeup Mushy Sofa construction
+Wakeup Mushy Sofa upholstery significance
+Wakeup Mushy Sofa relaxation design
+Wakeup Mushy Sofa benefit
+Wakeup Mushy Sofa feel
+Wakeup Mushy Sofa frame comfort
+Wakeup Mushy Sofa comfort support
+Wakeup Mushy Sofa frame material
+Wakeup Mushy Sofa construction quality
+Wakeup Mushy Sofa upholstery comfort
+
+=========================================================================================================
+=========================================================================================================
+
+CONTEXT: 
+
+The Mercedes-Benz G-Wagon is a luxury off-road SUV that combines rugged capability with high-end sophistication. Known for its iconic boxy design, powerful engine options, and premium interior, the G-Wagon delivers an unparalleled blend of performance, durability, and prestige. Whether tackling tough terrain or cruising in the city, it offers an elite driving experience with advanced technology and superior craftsmanship.
+
+QUERIES: 
+
+G-Wagon unique features
+G-Wagon design focus
+G-Wagon engine performance
+G-Wagon interior features
+G-Wagon off-road capabilities
+G-Wagon reputation
+G-Wagon design and performance
+G-Wagon advanced technologies
+G-Wagon interior comparison
+G-Wagon prestige level
+G-Wagon engine performance impact
+G-Wagon durability reputation
+G-Wagon design and durability
+G-Wagon advanced safety features
+G-Wagon interior influence
+G-Wagon city handling
+G-Wagon engine performance and fuel efficiency
+G-Wagon off-road capability reputation
+G-Wagon design and off-road capability
+G-Wagon inf
+
+=========================================================================================================
+=========================================================================================================

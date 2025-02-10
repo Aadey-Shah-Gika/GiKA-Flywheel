@@ -1,8 +1,2 @@
-/analysis
-.env
-/tests
-/logs
-/flywheel.egg-info
 *.pytest_cache*
 *__pycache__*
-conftest.py

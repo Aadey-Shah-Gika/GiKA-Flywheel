@@ -1,3 +1,4 @@
+import requests
 from .constants import DEFAULT_URL_SCRAPPER_CONFIG as default_config
 
 class URLScraper:
@@ -29,6 +30,7 @@ class URLScraper:
         self.url_limit = url_limit or self.url_limit
         self.browser = browser or self.browser
         self.max_request_retries = max_request_retries or self.max_request_retries
+        self.unsuccessful_queries = 0
     
     def fetch_urls(self, query, limit):
         """Fetch search results for a query using the search engine API."""
@@ -44,8 +46,11 @@ class URLScraper:
                     "start": start,
                     "num": min(self.batch_size, limit - start + 1)
                 }
-                data = self.browser.request(url = self.url, params=params)
-                results.extend(data.get("items", []))
+                query_encoded = requests.utils.quote(query)
+                data = self.browser.request(url=self.url, params=params)
+                # data = self.browser.request(f"https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=5c8d58cbdc1332a7&cx=d34dd4e345ae14ce0&q={query_encoded}&safe=active&cse_tok=AB-tC_7Eyy60QpyN08C9NOT0c6Py%3A1738063873909&lr=&cr=&gl=in&filter=0&sort=&as_oq=&as_sitesearch=&exp=cc&oq={query_encoded}&gs_l=partner-web.3..0i512i433i131l2j0i512i433j0i512i433i131j0i512i433i131j0i512i433i131j0i512i433l2.10220.11763.0.12010.8.8.0.0.0.0.106.739.7j1.8.0.csems%2Cnrl%3D10...0....1.34.partner-web..0.8.739.vaaYzMZH2xc&cseclient=hosted-page-client&callback=google.search.cse.api844&rurl=https%3A%2F%2Fcse.google.com%2Fcse%3Fcx%3Dd34dd4e345ae14ce0")
+                print("DATA:", data)
+                results.extend(data)
             return results
         except Exception as e:
             raise Exception(f"Error in fetch_urls: {str(e)}")
@@ -55,7 +60,8 @@ class URLScraper:
         for _ in range(self.max_request_retries):
             try:
                 return self.fetch_urls(query, limit)
-            except Exception:
+            except Exception as e:
+                raise e
                 continue
         raise Exception("Exceeded maximum retry attempts for search_query")
 
@@ -66,5 +72,6 @@ class URLScraper:
             try:
                 results[query] = self.search_query(query, self.url_limit)
             except Exception as e:
+                self.unsuccessful_queries += 1
                 results[query] = {"error": str(e)}
         return results
