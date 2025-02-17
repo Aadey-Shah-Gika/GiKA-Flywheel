@@ -12,7 +12,6 @@ debugpy
 exceptiongroup
 executing
 filelock
--e git+ssh://git@github.com/Aadey-Shah-Gika/GiKA-Flywheel.git#egg=flywheel
 fsspec
 huggingface-hub
 idna

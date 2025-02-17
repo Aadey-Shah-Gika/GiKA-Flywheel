@@ -7,7 +7,7 @@ DEFAULT_LLAMA_CONFIG = {
     "device": torch.device("cuda:1"),
     "torch_dtype": torch.bfloat16,
     "temperature": 0.9,
-    "max_new_tokens": 10000,
+    "max_new_tokens": 128000,
     "pad_token_id": 128001,
     "clean_up_tokenization_spaces": False
 }

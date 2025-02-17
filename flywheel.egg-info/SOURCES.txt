@@ -13,6 +13,7 @@ flywheel/url_collector/__init__.py
 flywheel/url_collector/url_scraper/__init__.py
 flywheel/url_collector/url_scraper/constants.py
 flywheel/url_collector/url_scraper/url_scraper.py
+flywheel/url_collector/url_scraper/url_scraper_interface.py
 flywheel/utils/__init__.py
 flywheel/utils/llm/__init__.py
 flywheel/utils/llm/constants.py

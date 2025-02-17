@@ -1,5 +1,5 @@
 from .query_generator import QueryGenerator
-from . import url_collector
+from .url_collector import GoogleSearchApiScraper, GoogleSearchWebScraper
 from . import utils
 
-__all__ = ['utils', 'QueryGenerator', 'url_collector']
+__all__ = ['utils', 'QueryGenerator', 'GoogleSearchApiScraper', 'GoogleSearchWebScraper']

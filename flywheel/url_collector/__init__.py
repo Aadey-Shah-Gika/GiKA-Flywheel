@@ -1,3 +1,3 @@
-from . import url_scraper
+from .scraper import GoogleSearchApiScraper, GoogleSearchWebScraper
 
-__all__ = ['url_scraper']
+__all__ = ['GoogleSearchApiScraper', 'GoogleSearchWebScraper']
