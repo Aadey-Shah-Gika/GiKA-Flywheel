@@ -8,7 +8,7 @@ class BaseScraper:
             "max_request_retries": default_config["max_request_retries"],
         }
         
-        #DEBUG Purposes
+        # For tracking unsuccessful queries
         self.unsuccessful_queries = []
 
         # Merge default values with user-provided values
@@ -22,6 +22,7 @@ class BaseScraper:
             setattr(self, key, value)
 
     def fetch_results(self, query, limit):
+        """Implement this method in child classes to fetch search results."""
         pass
 
     def execute_query(self, query, limit):
@@ -37,15 +38,24 @@ class BaseScraper:
                 continue
         raise Exception("Exceeded maximum retry attempts for execute_query")
 
-    def run_scraper(self, queries, num_results_per_query=default_config["url_limit"]):
+    def run_scraper(self, queries, num_results_per_query=None):
         """Perform searches for a list of queries and return results."""
+        
+        # default to url_limit if not provided
+        num_results_per_query = num_results_per_query or self.url_limit
+        
         results = {}
+        
         for query in queries:
             try:
                 results[query] = self.execute_query(query, num_results_per_query)
             except Exception as e:
                 results[query] = {"error": str(e)}
                 self.unsuccessful_queries.append(query)
+                
                 # TODO: Add logging mechanism here
                 print(f"Error in {query}: {str(e)}")
+                
+                #TODO: Add Exception raising mechanism here
+                raise Exception("Error in run_scraper")
         return results

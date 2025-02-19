@@ -1,5 +1,6 @@
 from flywheel import QueryGenerator
 
+# TODO: Improve code design for readability and maintainability
 
 def test_query_generator():
     queries = [
