@@ -11,7 +11,7 @@ class BaseScraper:
             "max_request_retries": default_config["max_request_retries"],
             "browser": default_config["browser"],
             "remaining_fetches_range": default_config["remaining_fetches_range"], # Waiting for some time after $remaining_fetches number of fetches
-            "wait_time_between_fetches": default_config["wait_time_between_fetches"], # Waiting for some time after each fetch
+            "wait_time_between_fetches_range": default_config["wait_time_between_fetches_range"], # Waiting for some time after each fetch
             "wait_time_after_certain_fetches_range": default_config["wait_time_after_certain_fetches_range"], # Waiting for some time after a certain number of fetches
         }
         
@@ -44,7 +44,7 @@ class BaseScraper:
         """Decrement remaining_fetches counter."""
         self.set_remaining_fetches(self.remaining_fetches - 1)
         self.browser.decrease_remaining_fetches()
-        time.sleep(random.uniform(self.wait_time_between_fetches[0], self.wait_time_between_fetches[1]))
+        time.sleep(random.uniform(self.wait_time_between_fetches_range[0], self.wait_time_between_fetches_range[1]))
 
     def init_remaining_fetches(self):
         """Initialize the remaining_fetches counter."""
@@ -67,8 +67,10 @@ class BaseScraper:
                 continue
         raise Exception("Exceeded maximum retry attempts for execute_query")
 
-    def run_scraper(self, queries, num_results_per_query):
+    def run_scraper(self, queries, num_results_per_query=None):
         """Perform searches for a list of queries and return results."""
+        
+        print("DEBUG -- Entered BaseScraper.run_scraper()")
         
         # default to url_limit if not provided
         num_results_per_query = num_results_per_query or self.url_limit
@@ -76,6 +78,7 @@ class BaseScraper:
         results = {}
         
         for query in queries:
+            print(f"DEBUG -- Running query -- [BaseScrapper.run_scraper()]: '{query}'")
             try:
                 results[query] = self.execute_query(query, num_results_per_query)
             except Exception as e:
@@ -90,4 +93,6 @@ class BaseScraper:
             
             # decrement remaining_fetches after each fetch
             self.decrement_remaining_fetches()
+        
+        print("DEBUG -- Exiting BaseScraper.run_scraper()")
         return results

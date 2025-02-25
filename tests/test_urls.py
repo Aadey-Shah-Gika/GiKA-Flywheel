@@ -1,22 +1,19 @@
 import json
 
+
 def test_urls():
     """Load URLs from a file."""
-    with open("./analysis/url_scraper/search_results.json", "r", encoding="utf-8") as file:
-        json_file = json.load(file)
+    with open("./flywheel/data/urls/data.json", "r", encoding="utf-8") as file:
+        urls = json.load(file)
 
-    urls = []
+    result = []
 
-    for thread in json_file:
-        for result in thread["results"]:
-            for query in result:
-                for url in result[query]:
-                    formatted_url = {
-                        "url": url["url"].strip(),
-                        "title": url["title"].strip(),
-                        "snippet": url["description"].strip(),
-                    }
-                    urls.append(formatted_url)
+    for url in urls:
+        result.append({
+            "url": url["url"],
+            "title": url["title"],
+            "snippet": url["snippet"]
+        })
 
-    with open("./analysis/url_scraper/urls/formatted_urls.json", "w", encoding="utf-8") as file:
-        json.dump(urls, file, indent=4)
+    with open("./flywheel/data/urls/data.json", "w", encoding="utf-8") as file:
+        json.dump(result, file, indent=4)

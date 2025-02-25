@@ -83,6 +83,9 @@ class URLFilter:
 
     def add_urls(self, urls):
         """Add new URLs to the existing data and update the index."""
+        if(len(urls) == 0):
+            print("No URLs to add.")
+            return self
         preprocessed_urls = self.preprocess_urls(urls)
         self.urls.extend(preprocessed_urls)
         print("DEBUG -- Preprocessing URLs Length:", len(preprocessed_urls))
@@ -99,15 +102,34 @@ class URLFilter:
         )
         return nearest_neighbors
     
+    def avg_similarity_score(self, nearest_neighbors):
+        """Calculate average similarity score between query and all URLs."""
+        
+        if not nearest_neighbors:  # More Pythonic check for empty list
+            return 0
+        
+        # Extracting distances and computing the average
+        total_distance = sum(neighbor["distance"] for neighbor in nearest_neighbors)
+        return total_distance / len(nearest_neighbors)
+    
     def get_similarity_score(self, nearest_neighbors):
         """Calculate similarity score between query and nearest neighbors."""
-        similarity_score_title = nearest_neighbors["title"]
-        similarity_score_snippet = nearest_neighbors["snippet"]
+        
+        similarity_score_title = self.avg_similarity_score(nearest_neighbors["title"])
+        similarity_score_snippet = self.avg_similarity_score(nearest_neighbors["snippet"])
+        
+        print("DEBUG -- [URLFilter.get_similarity_score] -- similarity_score_title:", similarity_score_title)
+        print("DEBUG -- [URLFilter.get_similarity_score] -- similarity_score_snippet:", similarity_score_snippet)
+        
         similarity_score = (similarity_score_title + similarity_score_snippet) / 2
+        
+        print("DEBUG -- [URLFilter.get_similarity_score] -- similarity_score:", similarity_score)
+        
         return similarity_score
         
     def filter_urls(self, urls):
         """Filter search results based on the ANN search results."""
+        
         filtered_results = []
         for url in urls:
             nearest_neighbors = {
@@ -115,9 +137,13 @@ class URLFilter:
                 "snippet": self.find_similar_urls(url, "snippet")
             }
             
+            print("DEBUG -- [URLFilter.filter_urls] -- Filtering URL:", url)
+            
             similarity_score = self.get_similarity_score(nearest_neighbors)
             
             if similarity_score >= 0.5:
                 filtered_results.append(url)
+        
+        self.add_urls(filtered_results)  # Add filtered URLs back to the existing data.
         
         return filtered_results

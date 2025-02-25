@@ -2,7 +2,8 @@ import json
 
 from .constants import DEFAULT_URL_COLLECTOR_CONFIG as default_config
 from submodules.browser import Browser
-from flywheel import GoogleSearchWebScraper, URLFilter
+from .scraper import GoogleSearchWebScraper
+from .filter import URLFilter
 
 class URLCollector:
     def __init__(self, **kwargs):
@@ -54,16 +55,48 @@ class URLCollector:
     def init_filter(self):
         """Initialize the URLFilter with the scraper."""
         url_filter = URLFilter()
-        url_filter.add_urls(self.urls)
         self.configure(url_filter=url_filter)
         return self
     
+    def extract_urls(self, search_results):
+        """Add the URLs extracted from the search results to the list."""
+        extracted_urls = []
+        for query in search_results.keys():
+            for url in search_results[query]:
+                extracted_urls.append({
+                    "url": url["url"],
+                    "title": url["title"],
+                    "snippet": url["description"],
+                    "isIndexed": False
+                })
+        return extracted_urls
+    
     def scrape_urls(self, queries):
+        print("DEBUG -- Entered URLCollector.scrape_urls()")
         search_results = self.url_scraper.run_scraper(queries)
+        extracted_urls = self.extract_urls(search_results)
+        print("DEBUG -- [URLCollector.scrape_urls()] -- Extracted URLs: ", extracted_urls)
+        
+        self.urls.extend(extracted_urls)
+        
+        with open(self.url_file_path, "w") as file:
+            json.dump(self.urls, file, indent=4)
+        print("DEBUG -- Exiting URLCollector.scrape_urls()")
         return search_results
+    
+    def filter_urls(self, search_results):
+        print("DEBUG -- Entered URLCollector.filter_urls()")
+        filtered_results = self.url_filter.filter_urls(search_results)
+        print("DEBUG -- Exiting URLCollector.filter_urls()")
+        return filtered_results
+    
+    def get_urls_by_ids(self, ids):
+        """Return the URLs by their IDs."""
+        urls = [self.urls[id] for id in ids if id > 0 and id < len(self.urls)]
+        return urls
     
     def collect_urls(self, queries):
         """Implement this method to collect URLs from a source."""
         search_results = self.url_scraper.run_scraper(queries)
-        filtered_results = self.url_filter.filter_urls(search_results)
-        return filtered_results
+        filtered_urls = self.url_filter.filter_urls(search_results)
+        return filtered_urls
