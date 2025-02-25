@@ -44,7 +44,7 @@ def thread_function(thread_id, queries, result_queue):
 
     browser = Browser(port=control_port, proxies=proxies)
     url_scraper = GoogleSearchWebScraper(
-        proxy=browser.getProxy("http"), max_request_retries=1
+        proxy=browser.getProxy("http"), max_request_retries=1, browser=browser,
     )
 
     # check_ip_rotation(proxies, browser)

@@ -1,3 +1,7 @@
 [submodule "submodules/browser"]
 	path = submodules/browser
 	url = git@github.com:knowledge-hive/Browser.git
+[submodule "submodules/crawler"]
+	path = submodules/crawler
+	url = git@github.com:knowledge-hive/Crawler-py.git
+	branch = main

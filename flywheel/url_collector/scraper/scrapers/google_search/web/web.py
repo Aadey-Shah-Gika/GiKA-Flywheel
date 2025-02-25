@@ -8,7 +8,7 @@ from .constants import DEFAULT_CONFIG as default_config
 class GoogleSearchWebScraper(BaseScraper):
     def __init__(self, **kwargs):
         default_kwargs = {
-            "proxy": default_config["proxy"]
+            "proxy": default_config["proxy"],
         }
         
         # Merge default values with user-provided values
