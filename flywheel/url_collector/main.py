@@ -1,4 +1,5 @@
 import json
+import os
 
 from .constants import DEFAULT_URL_COLLECTOR_CONFIG as default_config
 from submodules.browser import Browser
@@ -48,9 +49,23 @@ class URLCollector:
         return self
     
     def load_urls(self):
-        with open(self.url_file_path, "r") as file:
-            urls = json.load(file)
-        self.configure(urls=urls)
+        """Load URLs from file, creating an empty file if not found."""
+        if not os.path.exists(self.url_file_path):
+            # Create an empty JSON file
+            with open(self.url_file_path, "w") as file:
+                json.dump([], file)  # Store an empty list in the file
+            print(f"DEBUG -- [URLCollector.load_urls()] -- File created: {self.url_file_path}")
+
+        try:
+            with open(self.url_file_path, "r") as file:
+                urls = json.load(file)
+            self.configure(urls=urls)
+        except json.JSONDecodeError:
+            # Handle case where file exists but is corrupted
+            self.configure(urls=[])
+            print(f"WARNING -- [URLCollector.load_urls()] -- Corrupt JSON. Resetting file: {self.url_file_path}")
+            with open(self.url_file_path, "w") as file:
+                json.dump([], file)  # Reset file with an empty list
 
     def init_filter(self):
         """Initialize the URLFilter with the scraper."""
@@ -97,6 +112,7 @@ class URLCollector:
     
     def collect_urls(self, queries):
         """Implement this method to collect URLs from a source."""
-        search_results = self.url_scraper.run_scraper(queries)
+        for search_result in self.scrape_urls(queries).values():
+            yield from self.filter_urls([search_result])
         filtered_urls = self.url_filter.filter_urls(search_results)
         return filtered_urls

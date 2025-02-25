@@ -1,4 +1,6 @@
 import threading
+import random
+import itertools
 
 from .constants import DEFAULT_FLYWHEEL_CONFIG as default_config
 
@@ -12,7 +14,11 @@ class Flywheel:
             "number_of_threads": default_config["number_of_threads"],
             "crawled_urls_limit": default_config["crawled_urls_limit"],
             "total_urls_crawled": default_config["total_urls_crawled"],
-            "urls": set() # TESTING PURPOSE
+            "total_scrapers": default_config["total_scrapers"],
+            "urls_dir": default_config["urls_dir"],  # TESTING PURPOSE
+            "url_collector": [], # TESTING PURPOSE,
+            "urls": set(), # TESTING PURPOSE
+            "urls_lock": threading.Lock()  # Lock for thread safety
         }
         
         config_kwargs = {**defaults, **kwargs}
@@ -32,7 +38,18 @@ class Flywheel:
     
     def init_url_collector(self):
         """Initialize the URLCollector with the provided thread id."""
-        self.configure(url_collector = URLCollector(url_file_path="./analysis/url_scraper/search_results.json"))
+        self.configure(url_collector = [])  # TESTING PURPOSE
+        for thread_id in range(1, self.total_scrapers + 1):
+            url_path = self.urls_dir + f"thread_{thread_id}.json"  # TESTING PURPOSE
+            self.url_collector.append(URLCollector(thread_id=thread_id, url_file_path=url_path))
+            
+        # Create a round-robin iterator
+        self.url_collector_iter = itertools.cycle(self.url_collector)
+    
+    def add_url(self, url):
+        """Safely add a URL to the set using a lock."""
+        with self.urls_lock:
+            self.urls.add(url)
     
     def increase_total_urls_crawled(self):
         self.configure(total_urls_crawled = self.total_urls_crawled + 1)
@@ -41,22 +58,30 @@ class Flywheel:
     def generate_queries(self, context):
         return self.query_generator.generate_queries(context)
     
+    def get_url_collector(self):
+        return next(self.url_collector_iter)  # Moves cyclically through collectors
     
     def collect_urls(self, queries):
         """Collect URLs from the provided queries using the configured number of threads."""
-        for url in self.url_collector.collect_urls(queries):
-            yield url  # Yield each URL as soon as it is collected
+        
+        for query in queries:
+            url_collector = self.get_url_collector() # Get a random URL collector
+            for url in url_collector.collect_urls([query]):
+                self.add_url(url)  # Add the URL to the list of URLs
+                yield url  # Yield each URL as soon as it is collected
     
     def isExistingURL(self, url):
         """Check if the provided URL is already existing in the list of URLs."""
-        return url in self.urls
+        with self.urls_lock:
+            return url in self.urls
     
     def crawl_url(self, url):
-        crawler = Crawler({
-        url
-        }, storage='/home/aadey/workspace/data_enrichment/GiKA-Flywheel/flywheel/Crawler_py/storage',tor_browser_path='/root/old_server/PrabhathE2E/crawler-py-copy/Crawler-py/tor_browser')
-        crawler.start()
-        return crawler.results
+        # crawler = Crawler({
+        # url
+        # }, storage='/home/aadey/workspace/data_enrichment/GiKA-Flywheel/flywheel/Crawler_py/storage',tor_browser_path='/root/old_server/PrabhathE2E/crawler-py-copy/Crawler-py/tor_browser')
+        # crawler.start()
+        # return crawler.results
+        return [] # TESTING PURPOSE
     
     def run_crawler(self, url):
         """Run a crawler in a new thread for the given URL and process new contexts."""
