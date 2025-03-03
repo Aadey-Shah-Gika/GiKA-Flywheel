@@ -14,8 +14,7 @@ class QueryGeneratorLoadBalancer:
             self.max_tasks_once = default_config['max_tasks_once']
         
     def start(self):
-        # ! Remove after testing
-        time.sleep(5)
+        
         while True:
             raw_tasks = self.task_queue.get()
             tasks = raw_tasks['result']
