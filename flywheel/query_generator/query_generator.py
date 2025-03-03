@@ -1,11 +1,12 @@
 from flywheel.utils.llm import Llm
 from .constants import SYSTEM_INSTRUCTIONS
 import torch
+from .query_generator_load_balancer import QueryGeneratorLoadBalancer
 
-
-class QueryGenerator:
-    def __init__(self):
+class QueryGenerator(QueryGeneratorLoadBalancer):
+    def __init__(self, **kwargs):
         self.llm = Llm()
+        super().__init__(**kwargs)
 
     def _generate_user_context(self, content):
         """Creates a user instruction based on the provided content with comprehensive guidelines."""
@@ -15,16 +16,28 @@ class QueryGenerator:
             f"{content}"
         )
 
+    def build_prompt(self, context):
+        system_prompt = {"role": "system", "content": SYSTEM_INSTRUCTIONS}
+        user_prompt = {"role": "user", "content": self._generate_user_context(context)}
+        
+        return [system_prompt, user_prompt]
+
     def build_llm_message(self, content):
         """Constructs the message structure for the LLM."""
-        system_prompt = {"role": "system", "content": SYSTEM_INSTRUCTIONS}
-        user_prompt = {"role": "user", "content": self._generate_user_context(content)}
-        return [[system_prompt, user_prompt]]
+        llm_message = [self.build_prompt(context) for context in content]
+        return llm_message
 
-    def _extract_content_from_response(self, response):
+    def _extract_content_from_response(self, responses):
         """Extracts meaningful content from the LLM response."""
-        content = response[0][-1]["content"]
-        return content.split("Here are the 25 question-answer pairs:")[-1].strip()
+        
+        # print("DEBUG -- [QueryGenerator._extract_content_from_response] -- response:", response)
+        
+        extracted_response = []
+        for response in responses:
+            content = response[-1]["content"]
+            extracted_response.append(content.split("Here are the 25 question-answer pairs:")[-1].strip())
+            
+        return extracted_response
 
     def get_formatted_response_from_llm(self, content):
         """Fetches and formats the LLM response."""
@@ -34,14 +47,16 @@ class QueryGenerator:
 
     def _extract_queries(self, response_text):
         """Extracts query statements from the LLM-generated response."""
+        print('DEBUG -- [QueryGenerator._extract_queries] -- response text:', response_text)
         return [
             line.split("Query:")[-1].strip()
             for line in response_text.split("\n")
             if line.startswith("Query:")
         ]
 
-    def generate_queries(self, content):
+    def generate_queries(self, content): # content is a string
         """Generates a list of queries extracted from the formatted LLM response."""
-        response_text = self.get_formatted_response_from_llm(content)
+        responses = self.get_formatted_response_from_llm(content)
         torch.cuda.empty_cache()
-        return self._extract_queries(response_text)
+        queries = [self._extract_queries(response) for response in responses]
+        return queries

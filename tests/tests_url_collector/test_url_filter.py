@@ -6,9 +6,25 @@ from rich import print
 from flywheel import URLFilter
 from flywheel.utils.ann_store import ANNStore
 
+from multiprocessing import Process, Manager, Queue
+
 
 default_url_path = "./analysis/url_scraper/search_results.json"
 
+def setup_url_filter(task_queue, submit_queue):
+    with Manager() as manager:
+        url_filter = URLFilter(manager=manager,task_queue=task_queue, submit_queue=submit_queue)
+        url_filter.start()
+    
+def setup_collector(task_queue):
+    file_path = "./tests/data/load_balancer/test_start/collector_result.json"
+    results = []
+    while True:
+        task = task_queue.get()
+        results.append(task)
+        # Write results to ./tests/data/load_balancer/test_start/collector_result.json
+        with open(file_path, "w", encoding="utf-8") as file:
+            json.dump(results, file, indent=4)
 
 def delete_files_in_directory(directory_path):
     try:

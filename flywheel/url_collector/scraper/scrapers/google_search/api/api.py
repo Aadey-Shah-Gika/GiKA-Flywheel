@@ -3,18 +3,15 @@ from ....base_scrapper import BaseScraper
 
 class GoogleSearchApiScraper(BaseScraper):
     def __init__(self, **kwargs):
-        default_kwargs = {
-            "url": default_config["url"],
-            "api_key": default_config["api_key"],
-            "search_engine_id": default_config["search_engine_id"],
-            "browser": default_config["browser"](),
+        config = {
+            "url": kwargs["url"] or default_config["url"],
+            "api_key": kwargs["api_key"] or default_config["api_key"],
+            "search_engine_id": kwargs["search_engine_id"] or default_config["search_engine_id"],
+            "browser": kwargs["browser"] or default_config["browser"](),
         }
         
-        # Merge default values with user-provided values
-        config_kwargs = {**default_kwargs, **kwargs}
-        
-        self.configure(**config_kwargs)
-        super().__init__(**config_kwargs)
+        self.configure(**config)
+        super().__init__(**kwargs)
 
     def configure(self, **kwargs):
         """Configure search engine settings with provided values or defaults."""

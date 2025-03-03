@@ -3,4 +3,4 @@ from .url_collector import GoogleSearchApiScraper, GoogleSearchWebScraper, URLFi
 from . import utils
 from .main import Flywheel
 
-__all__ = ['utils', 'QueryGenerator', 'GoogleSearchApiScraper', 'GoogleSearchWebScraper', 'URLFilter', 'Flywheel']
+__all__ = ['utils', 'QueryGenerator', 'GoogleSearchApiScraper', 'GoogleSearchWebScraper', 'URLFilter', 'Flywheel', 'URLCollector']

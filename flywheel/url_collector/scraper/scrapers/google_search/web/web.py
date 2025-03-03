@@ -7,15 +7,13 @@ from .constants import DEFAULT_CONFIG as default_config
 
 class GoogleSearchWebScraper(BaseScraper):
     def __init__(self, **kwargs):
-        default_kwargs = {
-            "proxy": default_config["proxy"],
-        }
+        config_keys = {"proxy"}
+        config = {}
+        for key in config_keys:
+            config[key] = kwargs.get(key, default_config.get(key))
         
-        # Merge default values with user-provided values
-        config_kwargs = {**default_kwargs, **kwargs}
-        
-        self.configure(**config_kwargs)
-        super().__init__(**config_kwargs)
+        self.configure(**config)
+        super().__init__(**kwargs)
     
     def configure(self, **kwargs):
         """Configure proxy settings with provided values or defaults."""

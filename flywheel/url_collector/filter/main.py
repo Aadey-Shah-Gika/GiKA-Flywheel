@@ -1,74 +1,85 @@
 from .constants import DEFAULT_URL_FILTER_CONFIG as default_config
 import pandas as pd
 import numpy as np
+import requests
+import json
 
+from filelock import FileLock
+from threading import Lock
 
-class URLFilter:
+from .filter_load_balancer import FilterLoadBalancer
+
+class URLFilter(FilterLoadBalancer):
     def __init__(self, **kwargs):
         """Initialize the URLFilter with default parameters."""
 
         defaults = {
-            "ann_store": default_config["ann_store"],
-            "urls": default_config["urls"],
+            "ann_store_urls": default_config["ann_store_urls"],
             "snippet_length_threshold": default_config["snippet_length_threshold"],
+            "url_file_path": default_config["url_file_path"],
         }
 
         # Merge default values with user-provided values
         config_kwargs = {**defaults, **kwargs}
         self.configure(**config_kwargs)
+        
+        # initializing locks
+        self._file_pLock = FileLock(f"{self.url_file_path}.lock")
+        self._file_tLock = Lock()
+        
+        super().__init__(**kwargs)
 
     def configure(self, **kwargs):
         """Update the parameters of the URLFilter."""
         for key, value in kwargs.items():
             setattr(self, key, value)
         return self
-
-    def load_urls(self, urls):
-        """Load URLs (json format)."""
-        self.configure(urls=urls)
-        return self
-
-    def encode_text(self, text):
-        """encode a URL using ANN Utils."""
-        encoded_entry = self.ann_store["title"].convert_text_to_embeddings(text)
-        return encoded_entry
     
-    def encode_url(self, url, key):
-        """encode a URL using ANN Utils."""
-        
-        text = url[key] if key in url else ""
-        
-        encoded_entry = self.encode_text(text)
-        return encoded_entry
+    def save_url(self, urls):
+        """Save the url to file."""
+        with self._file_pLock:
+            with self._file_tLock:
+                
+                with open(self.url_file_path, 'r', encoding='utf-8') as file:
+                    json_file = json.load(file)
+                    json_file.extend(urls)
+                
+                with open(self.url_file_path, 'w', encoding='utf-8') as file:
+                    json.dump(json_file, file, indent=4)
+                    
     
-    def encode_url_query(self, query):
-        """encode a URL using ANN Utils."""
+    def transform_url_query(self, query):
+        """Transform JSON to a query string"""
         
-        transformed_text = f"""
+        transformed_query = f"""
         Title: {query["title"]}
         \n==================================\n
         Description: {query["snippet"]}
         """
         
-        encoded_query = self.encode_text(transformed_text)
+        return transformed_query
+
+    def index_urls(self, data, ann_store_name):
+        """Store the url to respective stores"""
         
-        return encoded_query
-
-    @staticmethod
-    def convert_list_to_vectors(data):
-        """Convert JSON data to CSV format"""
-        vectors = np.array(data, dtype=np.float32)
-        return vectors
-
-    def index_urls(self, encoded_data, ann_store):
-        """encode URLs data into embeddings using ANN Utils."""
-        encoded_vectors = self.convert_list_to_vectors(encoded_data)
-        ann_store.add(encoded_vectors)
-        return self
-
-    def encode_and_index_url_info(self, urls, key):
-        encoded_data = [self.encode_url(url, key) for url in urls]
-        self.index_urls(encoded_data, self.ann_store[key])
+        url = f"{self.ann_store_urls[ann_store_name]}/add"
+        
+        headers = {
+            "Content-Type": "application/json"  # Ensure the correct Content-Type
+        }
+        
+        print("DEBUG -- [URLFilter.index_urls] -- url:", url)
+        
+        response = {'data': data}
+        
+        response = requests.post(url, json=response, headers=headers)
+        
+        if response.status_code == 200:
+            print("DEBUG -- [URLFilter.index_url] -- INDEXED SUCCESSFULLY")
+            print("Indexed successfully.")
+            return self
+        
+        print("Failed to index.")
         return self
     
     def preprocess_urls(self, urls):
@@ -77,7 +88,7 @@ class URLFilter:
         
         for url in urls:
             if len(url["snippet"]) <= self.snippet_length_threshold:
-                url["snippet"] = ""
+                url["snippet"] = url['title']
             preprocessed_urls.append(url)
         return preprocessed_urls
 
@@ -86,21 +97,42 @@ class URLFilter:
         if(len(urls) == 0):
             print("No URLs to add.")
             return self
+        
+        print("DEBUG -- [URLFilter.add_url] -- urls:", urls)
+        
         preprocessed_urls = self.preprocess_urls(urls)
-        self.urls.extend(preprocessed_urls)
-        print("DEBUG -- Preprocessing URLs Length:", len(preprocessed_urls))
-        self.encode_and_index_url_info(preprocessed_urls, "title")
-        self.encode_and_index_url_info(preprocessed_urls, "snippet")
+        
+        self.save_url(preprocessed_urls)
+        
+        self.index_urls(preprocessed_urls, "title")
+        self.index_urls(preprocessed_urls, "snippet")
+        
         return self
 
     def find_similar_urls(self, query, key):
-        encoded_query_vector = self.encode_url_query(query)
-        encoded_query_vector = [encoded_query_vector]
-        encoded_query_np = np.array(encoded_query_vector, dtype=np.float32)
-        nearest_neighbors = self.ann_store[key].search_similar_items(
-            encoded_query_np, 2
-        )
-        return nearest_neighbors
+        
+        transformed_query = self.transform_url_query(query)
+        
+        url = f"{self.ann_store_urls[key]}/nearest_neighbor"
+        
+        headers = {
+            "Content-Type": "application/json"  # Ensure the correct Content-Type
+        }
+
+        data = {
+            'query': transformed_query,
+            'k': 1
+        }
+        
+        response = requests.post(url, json=data, headers=headers)
+        
+        if response.status_code == 200:
+            nearest_neighbors = response.json()['data']
+            return nearest_neighbors
+
+        print("Failed to find similar URLs.")
+        print("Response:", response.text)
+        return [{'distance': 0, 'id': -1}]
     
     def avg_similarity_score(self, nearest_neighbors):
         """Calculate average similarity score between query and all URLs."""
@@ -130,7 +162,10 @@ class URLFilter:
     def filter_urls(self, urls):
         """Filter search results based on the ANN search results."""
         
+        print("DEBUG -- [URLFilter.filter_urls] -- urls:", urls)
+        
         filtered_results = []
+        
         for url in urls:
             nearest_neighbors = {
                 "title": self.find_similar_urls(url, "title"),
@@ -144,6 +179,8 @@ class URLFilter:
             if similarity_score >= 0.5:
                 filtered_results.append(url)
         
-        self.add_urls(filtered_results)  # Add filtered URLs back to the existing data.
+        if filtered_results and len(filtered_results) > 0:
+            self.add_urls(filtered_results)  # Add filtered URLs back to the existing data.
         
         return filtered_results
+    
