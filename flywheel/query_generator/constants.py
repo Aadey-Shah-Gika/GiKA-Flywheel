@@ -11,3 +11,5 @@ with open(FILE_PATH, "r", encoding="utf-8") as file:
 DEFAULT_LOAD_BALANCER_CONFIG = {
     'max_tasks_once': 30
 }
+
+TASK_STORAGE_DIR = './flywheel/data/contexts'

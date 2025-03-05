@@ -68,18 +68,14 @@ class URLFilter(FilterLoadBalancer):
             "Content-Type": "application/json"  # Ensure the correct Content-Type
         }
         
-        print("DEBUG -- [URLFilter.index_urls] -- url:", url)
-        
         response = {'data': data}
         
         response = requests.post(url, json=response, headers=headers)
         
         if response.status_code == 200:
-            print("DEBUG -- [URLFilter.index_url] -- INDEXED SUCCESSFULLY")
-            print("Indexed successfully.")
             return self
         
-        print("Failed to index.")
+        # TODO: Add logging mechanism for handling giving warning of not received successful response
         return self
     
     def preprocess_urls(self, urls):
@@ -97,8 +93,6 @@ class URLFilter(FilterLoadBalancer):
         if(len(urls) == 0):
             print("No URLs to add.")
             return self
-        
-        print("DEBUG -- [URLFilter.add_url] -- urls:", urls)
         
         preprocessed_urls = self.preprocess_urls(urls)
         
@@ -129,9 +123,7 @@ class URLFilter(FilterLoadBalancer):
         if response.status_code == 200:
             nearest_neighbors = response.json()['data']
             return nearest_neighbors
-
-        print("Failed to find similar URLs.")
-        print("Response:", response.text)
+        
         return [{'distance': 0, 'id': -1}]
     
     def avg_similarity_score(self, nearest_neighbors):
@@ -150,19 +142,12 @@ class URLFilter(FilterLoadBalancer):
         similarity_score_title = self.avg_similarity_score(nearest_neighbors["title"])
         similarity_score_snippet = self.avg_similarity_score(nearest_neighbors["snippet"])
         
-        print("DEBUG -- [URLFilter.get_similarity_score] -- similarity_score_title:", similarity_score_title)
-        print("DEBUG -- [URLFilter.get_similarity_score] -- similarity_score_snippet:", similarity_score_snippet)
-        
         similarity_score = (similarity_score_title + similarity_score_snippet) / 2
-        
-        print("DEBUG -- [URLFilter.get_similarity_score] -- similarity_score:", similarity_score)
         
         return similarity_score
         
     def filter_urls(self, urls):
         """Filter search results based on the ANN search results."""
-        
-        print("DEBUG -- [URLFilter.filter_urls] -- urls:", urls)
         
         filtered_results = []
         
@@ -171,8 +156,6 @@ class URLFilter(FilterLoadBalancer):
                 "title": self.find_similar_urls(url, "title"),
                 "snippet": self.find_similar_urls(url, "snippet")
             }
-            
-            print("DEBUG -- [URLFilter.filter_urls] -- Filtering URL:", url)
             
             similarity_score = self.get_similarity_score(nearest_neighbors)
             

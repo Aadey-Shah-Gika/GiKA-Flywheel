@@ -16,6 +16,8 @@ DEFAULT_CRAWLER_WRAPPER_CONFIG = {
     "summarizing_instruction": SYSTEM_INSTRUCTIONS,
 }
 
+TASK_STORAGE_DIR = "./flywheel/data/urls/filtered_urls.json"
+
 BLOCKED_DOMAINS = [
     "facebook",
     "twitter",

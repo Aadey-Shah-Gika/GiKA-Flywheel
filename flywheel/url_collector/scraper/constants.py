@@ -9,3 +9,5 @@ DEFAULT_URL_SCRAPPER_CONFIG = {
     "wait_time_between_fetches_range": [15, 20],
     "wait_time_after_certain_fetches_range": [40, 100],
 }
+
+TASK_STORAGE_DIR = "./flywheel/data/queries/generated.json"

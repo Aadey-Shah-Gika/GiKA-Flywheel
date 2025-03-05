@@ -39,7 +39,7 @@ def start_collector(task_queue):
         results.append(task)
         print(f"[COLLECTOR] -- [TASK COMPLETED: {len(results)}] -- COLLECTED:", task)
         with open(
-            "./tests/data/load_balancer/test_crawler/results.json",
+            "./tests/data/test_crawler/results.json",
             "w",
             encoding="utf8",
         ) as file:

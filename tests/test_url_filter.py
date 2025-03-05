@@ -19,7 +19,7 @@ def setup_url_filter(task_queue, submit_task_queue):
 
 
 def setup_collector(task_queue, max_results):
-    file_path = "./tests/data/load_balancer/test_start/collector_result.json"
+    file_path = "./tests/data/test_start/collector_result.json"
     results = []
     
     results_collected = 0

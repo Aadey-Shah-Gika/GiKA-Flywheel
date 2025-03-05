@@ -776,7 +776,7 @@ def test_result():
     generated_queries_file_path = "./flywheel/data/queries/generated.json"
     scraped_url_file_path = "./flywheel/data/urls/scraped.json"
     filtered_url_file_path = "./flywheel/data/urls/filtered_urls.json"
-    crawled_content_file_path = "./tests/data/load_balancer/test_flywheel/results.json"
+    crawled_content_file_path = "./tests/data/test_flywheel/results.json"
 
     analyzer = FLywheelAnalysis(
         initial_document_file_path,

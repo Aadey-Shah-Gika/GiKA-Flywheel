@@ -36,13 +36,12 @@ class FilterLoadBalancer(AbstractLoadBalancer):
     
     def run(self, task):
         
-        print("\n[DEBUG] -- FilterLoadBalancer :: run | task:", task, "\n")
-        
         self.save_tasks(task)
         
         urls = task['result']
         
         # TODO: Fix this description and snippet key conflicts
+        
         # ! Temporary Solution
         formatted_url = [{'url': url['url'], 'title': url['title'], 'snippet': url['description']} for url in urls]
             
@@ -52,7 +51,5 @@ class FilterLoadBalancer(AbstractLoadBalancer):
             "task": urls,
             "result": results,
         }
-        
-        print(f"\n[DEBUG] -- FilterLoadBalancer :: run | results: {response}\n")
         
         return response

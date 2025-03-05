@@ -3,7 +3,6 @@ from multiprocessing import Process, Manager, Queue
 
 from flywheel import QueryGenerator, GoogleSearchWebScraper, URLFilter, Crawler
 
-RESULT_FILE_DIR = "./tests/data/load_balancer/test_flywheel"
 INITIAL_DOCUMENT = [
     "Both Hathi Masala and Zoff Foods have their strengths, and the better choice depends on what you’re looking for in spices. Hathi Masala is a well-established brand with a strong reputation for its traditional spice blends. If you prefer time-tested flavors and a brand that has been around for years, this might be the better option for you. Zoff Foods, on the other hand, focuses on freshness and quality using cold grinding technology, which helps retain the natural oils and flavors of the spices. If you want something fresher and processed with modern techniques, Zoff might be a good pick. At the end of the day, both spice brands offer good quality, and it comes down to personal preference. If you want a deeper comparison, this blog breaks it down in detail: Hathi Masala vs Zoff Foods"
 ]
@@ -61,14 +60,8 @@ def start_collector(
         task = task_queue.get()
         results.append(task)
         print(f"[COLLECTOR] -- [TASK COMPLETED: {len(results)}] -- COLLECTED:", task)
-        # with open(
-        #     f"{RESULT_FILE_DIR}/{len(results)}.txt",
-        #     "w",
-        #     encoding="utf8",
-        # ) as file:
-        #     file.write(task["result"][0])
         
-        with open('./tests/data/load_balancer/test_flywheel/results.json', 'w', encoding="utf8") as json_file:
+        with open('./tests/data/test_flywheel/results.json', 'w', encoding="utf8") as json_file:
             json.dump(results, json_file, indent=4)
 
 

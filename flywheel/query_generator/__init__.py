@@ -1,3 +1,3 @@
-from .query_generator import QueryGenerator
+from .main import QueryGenerator
 
 __all__ = ['QueryGenerator']

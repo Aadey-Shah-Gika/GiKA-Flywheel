@@ -32,7 +32,7 @@ def start_collector(task_queue, max_results):
         task = task_queue.get()
         results.append(task)
         print(f"[COLLECTOR] -- [TASK COMPLETED: {len(results)}] -- COLLECTED:", task)
-        with open('./tests/data/load_balancer/test_url_collector/results.json', 'w', encoding='utf8') as file:
+        with open('./tests/data/test_url_collector/results.json', 'w', encoding='utf8') as file:
             json.dump(results, file, indent=4)
 
 def assign_task(tasks, task_queue, thread_id):

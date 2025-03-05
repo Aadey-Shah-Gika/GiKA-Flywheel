@@ -1,22 +1,23 @@
 You are an assistant that generates question-answer pairs from a given context.
 ###
 Instructions:
+
 You were given a context and you need to generate 25 detailed and verbose question-answer pairs from the given context.
 For each question, provide a small query statement that could be used to search for the answer.
 
 Questions should explore different aspects using these categories:
 ###
-Identify the main entity of the context and generate question around that contexts suppose there is one context talking about Biscoff cookies, then you should frame queries on Biscoff cookies along with cookies, desserts, cheese cakes etc. as these are the nearest entity(s) to it. That means generate 50% queries on the exact keyword given in the context for example here Biscoff cookies and 50% queries based on the entity it belongs for example here cookies, desserts, cheese cakes etc.
-Core features and basic definitions
-Technical specifications and details
-Usage scenarios and applications
-Comparisons with alternatives
-Benefits and advantages
-Pricing and value aspects
-User experience and feedback
-Industry-specific considerations
-Limitations or challenges
-Future developments or trends
+01. Identify the main entity of the context and generate question around that contexts suppose there is one context talking about Biscoff cookies, then you should frame queries on Biscoff cookies along with cookies, desserts, cheese cakes etc. as these are the nearest entity(s) to it. That means generate 50% queries on the exact keyword given in the context for example here Biscoff cookies and 50% queries based on the entity it belongs for example here cookies, desserts, cheese cakes etc.
+02. Core features and basic definitions
+03. Technical specifications and details
+04. Usage scenarios and applications
+05. Comparisons with alternatives
+06. Benefits and advantages
+07. Pricing and value aspects
+08. User experience and feedback
+09. Industry-specific considerations
+10. Limitations or challenges
+11. Future developments or trends
 
 
 Each question must be answerable from the context provided.
@@ -26,13 +27,13 @@ Each query must be unique and focus on a different aspect.
 
 NOTE FOR QUERIES:
 
-Maximum 5-8 words per query
-Generate queries based on the main entity mentioned in the context instead of using the same word for the queries to maintain the generalization. That means generate 50% queries on the exact keyword given in the context and 50% queries based on the entity it belongs.
-Must be unique and non-repetitive
-Should use different keywords
-Must focus on distinct aspects
-Should avoid similar patterns
-Must be directly related to the question
+1. Maximum 5-8 words per query
+2. Generate queries based on the main entity mentioned in the context instead of using the same word for the queries to maintain the generalization. That means generate 50% queries on the exact keyword given in the context and 50% queries based on the entity it belongs.
+3. Must be unique and non-repetitive
+4. Should use different keywords
+5. Must focus on distinct aspects
+6. Should avoid similar patterns
+7. Must be directly related to the question
 
 Input Format:
 ####
@@ -66,75 +67,99 @@ Here are the 25 question-answer pairs for the given context which gives you an i
 Question: What defines a trucker jacket's basic structure?
 Answer: A trucker jacket is characterized by its waist-length cut, button-up front, structured fit, pointed collar, and signature double chest pockets.
 Query: trucker jacket structure
+
 Question: What materials are primarily used in manufacturing trucker jackets?
 Answer: Trucker jackets are typically crafted from denim, suede, or leather, each offering different aesthetic and durability properties.
 Query: trucker jacket materials
+
 Question: How does insulated lining enhance a jacket?
 Answer: Some versions feature sherpa or quilted lining, which provides additional warmth and makes them suitable for colder weather wear.
 Query: insulated jacket benefits
+
 Question: What distinguishes a trucker jacket from a bomber jacket?
 Answer: Unlike bomber jackets, trucker jackets feature a structured fit, button-up front, and distinctive chest pockets, offering a more classic workwear aesthetic.
 Query: trucker versus bomber
+
 Question: What is the price spectrum for trucker jackets?
 Answer: Trucker jackets range from $40 for basic models to over $300 for premium versions, accommodating various budget levels.
 Query: trucker jacket prices
+
 Question: Which brands are renowned for trucker jackets?
 Answer: Levi's, Wrangler, and Lee are well-known manufacturers of trucker jackets, each offering their unique take on this classic style.
 Query: popular trucker brands
+
 Question: How versatile is a jacket in terms of occasions?
 Answer: Trucker jackets are highly versatile, suitable for casual outings, travel, and even semi-formal occasions when styled appropriately.
 Query: trucker jacket versatility
+
 Question: What makes chore jackets a similar alternative?
 Answer: Chore jackets share the workwear heritage and structured design of trucker jackets, though often with different pocket configurations and lengths.
 Query: chore jacket comparison
+
 Question: How does the layering capability benefit wearers?
 Answer: The structured yet comfortable fit allows trucker jackets to be worn over various garments or under heavier coats, making them excellent for layered outfits.
 Query: layering with truckers
+
 Question: What defines the rugged appeal of jackets?
 Answer: The combination of durable materials, structured design, and workwear-inspired details creates a rugged, masculine aesthetic.
 Query: rugged jacket features
+
 Question: How do different materials affect durability?
 Answer: Each material offers unique durability characteristics - denim provides excellent wear resistance, leather offers longevity, and suede adds sophisticated durability.
 Query: material durability comparison
+
 Question: What role do chest pockets serve?
 Answer: The double chest pockets are both functional for storage and serve as a defining stylistic element of the trucker jacket design.
 Query: chest pocket function
+
 Question: How has the trucker jacket evolved?
 Answer: While maintaining its core design elements, trucker jackets have evolved to include various materials, linings, and styling options to suit modern preferences.
 Query: trucker jacket evolution
+
 Question: What makes the pointed collar significant?
 Answer: The pointed collar is a key design element that maintains the jacket's classic appearance and allows for various styling options, including popping it up for added flair.
 Query: collar design importance
+
 Question: How does the button-up front enhance functionality?
 Answer: The button-up front allows for easy wearing and removal, provides adjustable ventilation, and contributes to the jacket's classic workwear aesthetic.
 Query: button front benefits
+
 Question: What determines premium pricing in jackets?
 Answer: Premium trucker jackets commanding higher prices often feature superior materials, craftsmanship, brand prestige, and additional design details.
 Query: premium pricing factors
+
 Question: How does the waist-length design benefit mobility?
 Answer: The waist-length cut allows for unrestricted movement while maintaining a flattering silhouette and easy layering capabilities.
 Query: waist length advantages
+
 Question: What makes trucker jackets suitable for travel?
 Answer: Their durable construction, versatile styling options, and practical storage make trucker jackets ideal for travel wear.
 Query: travel friendly features
+
 Question: How do seasonal variations differ?
 Answer: Seasonal variations include lighter unlined versions for summer and sherpa or quilted-lined options for winter wear.
 Query: seasonal jacket types
+
 Question: What styling options exist for semi-formal occasions?
 Answer: Trucker jackets can be dressed up with collared shirts, tailored pants, and proper accessories for semi-formal settings.
 Query: semi formal styling
+
 Question: How does the structured fit impact appearance?
 Answer: The structured fit provides a clean, tailored silhouette that flatters various body types and maintains shape over time.
 Query: structured fit benefits
+
 Question: What maintenance requirements exist?
 Answer: Maintenance varies by material - denim requires washing, leather needs conditioning, and suede requires special care to maintain appearance.
 Query: maintenance requirements
+
 Question: How do environmental conditions affect wear?
 Answer: Different materials and linings perform differently in various weather conditions, affecting comfort and durability.
 Query: environmental performance
+
 Question: What makes trucker jackets a wardrobe staple?
 Answer: Their classic design, versatility, durability, and ability to complement various outfits make them essential wardrobe pieces.
 Query: wardrobe essential features
+
 Question: How do modern interpretations differ?
 Answer: Modern trucker jackets may incorporate contemporary materials, updated fits, and innovative features while maintaining the classic design elements.
 Query: modern design updates
