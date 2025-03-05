@@ -1,4 +1,5 @@
 import os
+import json
 import time
 from .constants import DEFAULT_LOAD_BALANCER_CONFIG as default_config
 
@@ -12,20 +13,12 @@ class QueryGeneratorLoadBalancer:
             self.max_tasks_once = kwargs['max_tasks_once']
         else:
             self.max_tasks_once = default_config['max_tasks_once']
-        
-    def start(self):
-        
-        while True:
-            raw_tasks = self.task_queue.get()
-            tasks = raw_tasks['result']
             
             
-            while len(tasks) < self.max_tasks_once and not self.task_queue.empty():
-                extra_tasks = self.task_queue.get()
-                tasks.extend(extra_tasks['result'])
-            
-            response = self.run(tasks)
-            self.submit_task(response)
+    def save_tasks(self, tasks):
+        """Save the tasks to a file"""
+        with open('./flywheel/data/contexts/initial_context.txt', "w", encoding="utf-8") as file:
+            file.write(str(tasks))
     
     def run(self, task):
         
@@ -58,3 +51,21 @@ class QueryGeneratorLoadBalancer:
                 }
                 
                 self.submit_task_queue.put(cur_task)
+                
+    def start(self):
+        
+        # ! Remove after testing
+        time.sleep(5)
+        
+        while True:
+            raw_tasks = self.task_queue.get()
+            tasks = raw_tasks['result']
+            
+            while len(tasks) < self.max_tasks_once and not self.task_queue.empty():
+                extra_tasks = self.task_queue.get()
+                tasks.extend(extra_tasks['result'])
+            
+            self.save_tasks(tasks)
+            
+            response = self.run(tasks)
+            self.submit_task(response)

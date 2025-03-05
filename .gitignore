@@ -2,4 +2,5 @@
 *__pycache__*
 
 analysis
-/tests/data/*.json*
+*.json*
+

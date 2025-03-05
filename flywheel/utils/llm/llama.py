@@ -4,15 +4,15 @@ from transformers import pipeline
 import torch
 from tqdm import tqdm
 
-from .constants import DEFAULT_LLAMA_CONFIG, DEFAULT_LLAMA_BATCH_SIZE
+from .constants import DEFAULT_LLAMA_CONFIG as default_config, DEFAULT_LLAMA_BATCH_SIZE
 
 
 class Llama(LLMInterface):
 
-    def __init__(self, config=DEFAULT_LLAMA_CONFIG):
+    def __init__(self, **kwargs):
         self.llama_pipe = None
-        self.config = config
-        self.__initialize_llama_pipe(config)
+        self.config = {**default_config, **kwargs}
+        self.__initialize_llama_pipe(self.config)
 
     def __initialize_llama_pipe(self, config):
         """Initialize the llama pipeline based on the provided config."""
