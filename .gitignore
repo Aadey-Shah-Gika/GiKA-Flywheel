@@ -5,3 +5,5 @@ analysis
 *.json*
 
 flywheel.egg-info
+
+logs
