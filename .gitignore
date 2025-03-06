@@ -7,3 +7,5 @@ analysis
 flywheel.egg-info
 
 logs
+
+flywheel/data/contexts/initial_context.txt
