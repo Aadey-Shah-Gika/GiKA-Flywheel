@@ -1,55 +1,181 @@
 import json
-
+import logging
 from filelock import FileLock
 from threading import Lock as ThreadLock
 
 from flywheel.utils.load_balancer import AbstractLoadBalancer
 
+from .constants import TASK_STORAGE_DIR
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+
+def read_json_file(filename):
+    """
+    Read a JSON file and return its contents.
+
+    Parameters:
+    filename (str): The path to the JSON file to be read.
+
+    Returns:
+    dict: The contents of the JSON file as a Python dictionary.
+
+    Raises:
+    FileNotFoundError: If the specified file does not exist.
+    json.JSONDecodeError: If the file contains invalid JSON data.
+    """
+    try:
+        with open(filename, "r", encoding="utf-8") as json_file:
+            return json.load(json_file)
+    except FileNotFoundError:
+        logging.warning(f"File not found: {filename}. Returning empty data.")
+        return {}
+    except json.JSONDecodeError as e:
+        logging.error(f"Error decoding JSON from {filename}: {e}")
+        return {}
+
+
+def write_json_file(filename, data):
+    """
+    Write the provided data to a JSON file.
+
+    Parameters:
+    filename (str): The path to the JSON file to be written. If the file does not exist, it will be created.
+    data (dict): The Python dictionary to be written to the JSON file.
+
+    Returns:
+    None
+
+    Raises:
+    IOError: If there is an error writing to the file.
+    """
+    try:
+        with open(filename, "w", encoding="utf-8") as json_file:
+            json.dump(data, json_file, indent=4)
+        logging.info(f"Successfully wrote data to {filename}.")
+    except IOError as e:
+        logging.error(f"Error writing to {filename}: {e}")
+
+
 class FilterLoadBalancer(AbstractLoadBalancer):
     def __init__(self, **kwargs):
-        
-        self._progress_pLock = FileLock("./flywheel/data/urls/scraped.json.lock")
+        # File Lock for avoiding race between processes for operating task storage file.
+        self._progress_pLock = FileLock(f"{TASK_STORAGE_DIR}.lock")
+        # Thread Lock for avoiding race between threads for operating task storage file.
         self._progress_tLock = ThreadLock()
-        
+
+        logging.info("Initializing FilterLoadBalancer.")
         super().__init__(**kwargs)
-        
+
     def get_max_processes(self):
+        """
+        Get the maximum number of processes that can be used concurrently.
+
+        Returns:
+        int: The maximum number of processes. In this case, it is set to 9.
+        """
         return 9
-    
+
     def get_max_threads_per_process(self):
-        return 1
-    
+        """
+        Get the maximum number of threads that can be executed concurrently within a single process.
+
+        Returns:
+        int: The maximum number of threads. In this case, it is set to 9.
+        """
+        return 9
+
     def save_tasks(self, tasks):
-        """Save the tasks to a file"""
+        """
+        Save the tasks to a file.
+
+        This function is responsible for writing the provided tasks to a JSON file. It uses locks to ensure that concurrent processes and threads do not interfere with each other while accessing the file.
+
+        Parameters:
+        tasks (dict): A dictionary containing the task details to be saved.
+
+        Returns:
+        None
+
+        The function performs the following steps:
+        1. Acquires a file lock to ensure exclusive access to the task storage file.
+        2. Acquires a thread lock to prevent race conditions within a single process.
+        3. Attempts to read the existing tasks from the file. If the file does not exist, an empty list is used.
+        4. Appends the provided tasks to the existing data.
+        5. Writes the updated data back to the file using the `write_json_file` function.
+        """
+        logging.info("Saving tasks...")
         with self._progress_pLock:
             with self._progress_tLock:
                 try:
-                    with open("./flywheel/data/urls/scraped.json", "r", encoding="utf-8") as json_file:
-                        data = json.load(json_file)
-                except FileNotFoundError:
+                    data = read_json_file(TASK_STORAGE_DIR)
+                except Exception as e:
+                    logging.error(f"Error reading task storage file: {e}")
                     data = []
-                
+
                 data.append(tasks)
-                
-                with open("./flywheel/data/urls/scraped.json", 'w', encoding="utf-8") as json_file:
-                    json.dump(data, json_file, indent=4)
-    
+
+                try:
+                    write_json_file(TASK_STORAGE_DIR, data)
+                except Exception as e:
+                    logging.error(f"Error writing task storage file: {e}")
+
     def run(self, task):
-        
-        self.save_tasks(task)
-        
-        urls = task['result']
-        
-        # TODO: Fix this description and snippet key conflicts
-        
-        # ! Temporary Solution
-        formatted_url = [{'url': url['url'], 'title': url['title'], 'snippet': url['description']} for url in urls]
-            
-        results = self.filter_urls(formatted_url)
-        
-        response = {
-            "task": urls,
-            "result": results,
-        }
-        
-        return response
+        """
+        Execute the main logic of the filter load balancer.
+
+        Parameters:
+        task (dict): A dictionary containing the task details. The dictionary should have a 'result' key, which contains the URLs to be processed.
+
+        Returns:
+        dict: A dictionary containing the original task details and the filtered results. The dictionary has the following structure:
+            {
+                "task": urls,
+                "result": results,
+            }
+            - urls: The original URLs provided in the task.
+            - results: The filtered results obtained after processing the URLs.
+
+        The function performs the following steps:
+        1. Save the task details to a file using the `save_tasks` method.
+        2. Extract the URLs from the task details.
+        3. Format the URLs into a specific structure.
+        4. Filter the URLs using the `filter_urls` method.
+        5. Create a response dictionary containing the original task details and the filtered results.
+        6. Return the response dictionary.
+        """
+        logging.info("Running task filtering process...")
+
+        try:
+            self.save_tasks(task)
+            urls = task.get("result", [])
+
+            if not urls:
+                logging.warning("No URLs found in task result.")
+                return {"task": urls, "result": []}
+
+            formatted_urls = [
+                {
+                    "url": url["url"],
+                    "title": url["title"],
+                    "snippet": url.get("description", ""),
+                }
+                for url in urls
+                if "url" in url and "title" in url
+            ]
+
+            results = self.filter_urls(formatted_urls)
+
+            response = {
+                "task": urls,
+                "result": results,
+            }
+
+            logging.info("Task processing completed successfully.")
+            return response
+        except Exception as e:
+            logging.error(f"Unexpected error in run method: {e}")
+            return {"task": task, "result": []}

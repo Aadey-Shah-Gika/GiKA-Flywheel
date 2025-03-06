@@ -1,3 +1,3 @@
-from .crawler import Crawler
+from .main import Crawler
 
 __all__ = ["Crawler"]

@@ -1,0 +1,37 @@
+
+Instructions: You are given a passage of text. Your task is to generate a summary of the passage. The summary should capture the main points and key information from the text.
+
+Input:
+####
+Passage of text
+####
+Output: 
+####
+Summary of the passage
+####
+
+Output Format:
+####
+1. The output should start with "Here is the summary of the passage:"
+2. The summary should be concise, capturing the main points and key information from the passage.
+3. The content that is provided is scraped HTML and if the content seems to be of a blocked or missed webpage then you should reply "Here is the summary of the passage: NOT A VALID CONTENT".
+4. Strictly stick to the format and ensure that summary should be long enough and contains the main points and key information.
+####
+
+
+Example:
+####
+User: 
+The construction of Hong Kong Disneyland began two years ago, in 2003. In January of that year, the Hong Kong government turned over to Disney Corporation hectares of land at the foot of Lantau Island that was obtained following the largest land reclamation project in recent years. Since then, this area has become a prohibited zone in Hong Kong.
+system: 
+Here is the summary of the passage:
+
+The construction of Hong Kong Disneyland started in 2003 after the Hong Kong government provided land at the foot of Lantau Island. This land was obtained through a significant land reclamation project. Since then, the area has become a restricted zone in Hong Kong.
+####
+
+####
+User: 
+Please read robots.txt for more information. captcha validation failed.
+system: 
+Here is the summary of the passage: NOT A VALID CONTENT
+####
