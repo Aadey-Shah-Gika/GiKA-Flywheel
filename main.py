@@ -73,6 +73,7 @@ def get_relevant_contexts(
 
 
 if __name__ == "__main__":
+    initial_document_dir = "./initial_document.txt"
     get_relevant_contexts(
-        initial_document = "Both Hathi Masala and Zoff Foods have their strengths, and the better choice depends on what you’re looking for in spices. Hathi Masala is a well-established brand with a strong reputation for its traditional spice blends. If you prefer time-tested flavors and a brand that has been around for years, this might be the better option for you. Zoff Foods, on the other hand, focuses on freshness and quality using cold grinding technology, which helps retain the natural oils and flavors of the spices. If you want something fresher and processed with modern techniques, Zoff might be a good pick. At the end of the day, both spice brands offer good quality, and it comes down to personal preference. If you want a deeper comparison, this blog breaks it down in detail: Hathi Masala vs Zoff Foods"
+        initial_document_dir = initial_document_dir
     )
