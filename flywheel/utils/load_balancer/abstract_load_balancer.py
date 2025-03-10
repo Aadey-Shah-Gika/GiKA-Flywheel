@@ -5,7 +5,10 @@ import os
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s",
+)
 
 class AbstractLoadBalancer(ABC):
     def __init__(self, **kwargs):
@@ -20,6 +23,10 @@ class AbstractLoadBalancer(ABC):
         Returns:
         None
         """
+        
+        # Create a logger for this class
+        self.logger = logging.getLogger(self.__class__.__name__)
+        
         manager = kwargs["manager"]
         task_queue = kwargs["task_queue"]
         submit_task_queue = kwargs["submit_task_queue"]
@@ -33,7 +40,7 @@ class AbstractLoadBalancer(ABC):
         self.task_queues = self.manager.dict()  # Dictionary to hold process-specific task queues
         self.submit_task_queue = submit_task_queue # Queue for submitting completed tasks
 
-        logging.info("Load balancer initialized with max_processes=%d and max_threads_per_process=%d", 
+        self.logger.info("Load balancer initialized with max_processes=%d and max_threads_per_process=%d", 
                      self.max_processes, self.max_threads_per_process)
 
     @abstractmethod
@@ -96,11 +103,11 @@ class AbstractLoadBalancer(ABC):
         Returns:
         None
         """
-        logging.info("Load balancer started")
+        self.logger.info("Load balancer started")
 
         while True:
             task = self.task_queue.get()  # Wait for a new task
-            logging.info("Received task: %s", str(task))
+            self.logger.info("Received task: %s", str(task))
 
             # Check if we need to spawn a new process
             if self.num_processes < self.max_processes:
@@ -108,7 +115,7 @@ class AbstractLoadBalancer(ABC):
 
             # Get the next available process
             pid = self.potential_processes.get()
-            logging.info("Assigning task to process with PID: %d", pid)
+            self.logger.info("Assigning task to process with PID: %d", pid)
             self.assign_task_to_process(pid, task)
 
     def create_process(self):
@@ -129,7 +136,7 @@ class AbstractLoadBalancer(ABC):
         proc = Process(target=self.process_worker, args=(self.num_processes,))
         proc.start()
 
-        logging.info("Spawned new process with PID: %d", proc.pid)
+        self.logger.info("Spawned new process with PID: %d", proc.pid)
 
         # Create a queue for the new process and store its PID in the potential queue
         self.task_queues[proc.pid] = self.manager.Queue()
@@ -153,7 +160,7 @@ class AbstractLoadBalancer(ABC):
         Returns:
         None
         """
-        logging.info("Task assigned to process PID: %d", pid)
+        self.logger.info("Task assigned to process PID: %d", pid)
         self.task_queues[pid].put(task)
 
     def assign_task_to_thread(self, task):
@@ -169,7 +176,7 @@ class AbstractLoadBalancer(ABC):
         Returns:
         None
         """
-        logging.info("Task assigned to a new thread :: %s", str(task))
+        self.logger.info("Task assigned to a new thread :: %s", str(task))
         thread = Thread(target=self.thread_worker, args=(task,))
         thread.start()
 
@@ -188,7 +195,7 @@ class AbstractLoadBalancer(ABC):
         None
         """
         pid = os.getpid()
-        logging.info("Process started with PID: %d", pid)
+        self.logger.info("Process started with PID: %d", pid)
 
         self.setup_process(id)
 
@@ -199,7 +206,7 @@ class AbstractLoadBalancer(ABC):
 
         while True:
             task = child_process_task_queue.get()
-            logging.info("Process PID: %d received task: %s", pid, str(task))
+            self.logger.info("Process PID: %d received task: %s", pid, str(task))
             self.assign_task_to_thread(task)
 
     @abstractmethod
@@ -235,9 +242,9 @@ class AbstractLoadBalancer(ABC):
         None
         """
         pid = os.getpid()
-        logging.info("Thread executing task in Process PID: %d", pid)
+        self.logger.info("Thread executing task in Process PID: %d", pid)
         result = self.run(task)
-        logging.info("Task execution completed in Process PID: %d", pid)
+        self.logger.info("Task execution completed in Process PID: %d", pid)
         self.submit_task(result)  # Send result back to the submit queue
         self.potential_processes.put(pid)  # Mark process as available again
 
@@ -258,5 +265,5 @@ class AbstractLoadBalancer(ABC):
 
         The function logs the submission of the task using the logging module, and then places the task into the submit_task_queue for further processing.
         """
-        logging.info("Submitting task result: %s", str(task))
+        self.logger.info("Submitting task result: %s", str(task))
         self.submit_task_queue.put(task)

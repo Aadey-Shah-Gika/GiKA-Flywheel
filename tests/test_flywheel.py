@@ -60,8 +60,10 @@ def start_collector(
         task = task_queue.get()
         results.append(task)
         print(f"[COLLECTOR] -- [TASK COMPLETED: {len(results)}] -- COLLECTED:", task)
-        
-        with open('./tests/data/test_flywheel/results.json', 'w', encoding="utf8") as json_file:
+
+        with open(
+            "./tests/data/test_flywheel/results.json", "w", encoding="utf8"
+        ) as json_file:
             json.dump(results, json_file, indent=4)
 
 

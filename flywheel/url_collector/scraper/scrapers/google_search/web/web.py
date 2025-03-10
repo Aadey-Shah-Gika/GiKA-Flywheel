@@ -5,8 +5,10 @@ from ....base_scrapper import BaseScraper
 from .constants import DEFAULT_CONFIG as default_config
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s",
+)
 
 
 class GoogleSearchWebScraper(BaseScraper):
@@ -21,6 +23,10 @@ class GoogleSearchWebScraper(BaseScraper):
 
         :param kwargs: Additional configuration parameters.
         """
+        
+        # Create a logger for this class
+        self.logger = logging.getLogger(self.__class__.__name__)
+        
         config_keys = ["proxy"]
         config = {}
         
@@ -32,7 +38,7 @@ class GoogleSearchWebScraper(BaseScraper):
         # Configure the scraper with the provided or default settings
         self.configure(**config)
         
-        # Initialize the BaseScraper
+        # Initialize the parent class
         super().__init__(**kwargs)
 
     def configure(self, **kwargs):
@@ -46,7 +52,7 @@ class GoogleSearchWebScraper(BaseScraper):
 
         # Configure BaseScraper
         super().configure(**kwargs)
-        logger.info("Scraper configured with: %s", kwargs)
+        self.logger.info("Scraper configured with: %s", kwargs)
 
     def parse_search_results(self, search_results):
         """
@@ -58,11 +64,11 @@ class GoogleSearchWebScraper(BaseScraper):
         try:
             parsed_results = [vars(result) for result in search_results]
             
-            logger.info("Parsed %d search results.", len(parsed_results))
+            self.logger.info("Parsed %d search results.", len(parsed_results))
             
             return parsed_results
         except Exception as e:
-            logger.error("Error parsing search results: %s", str(e))
+            self.logger.error("Error parsing search results: %s", str(e))
             return []
 
     def fetch_results(self, query, limit):
@@ -74,7 +80,7 @@ class GoogleSearchWebScraper(BaseScraper):
         :return: Parsed search results.
         """
         try:
-            logger.info("Fetching results for query: '%s' with limit: %d", query, limit)
+            self.logger.info("Fetching results for query: '%s' with limit: %d", query, limit)
             
             search_results = list(
                 search(
@@ -89,11 +95,11 @@ class GoogleSearchWebScraper(BaseScraper):
             # Parse the search results [SearchResults -> list]
             parsed_results = self.parse_search_results(search_results)
             
-            logger.info(
+            self.logger.info(
                 "Successfully fetched and parsed %d results.", len(parsed_results)
             )
             
             return parsed_results
         except Exception as e:
-            logger.error("Error fetching search results: %s", str(e))
+            self.logger.error("Error fetching search results: %s", str(e))
             return []

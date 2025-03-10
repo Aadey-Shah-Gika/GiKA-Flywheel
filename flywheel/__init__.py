@@ -3,11 +3,10 @@ from .url_collector import (
     GoogleSearchApiScraper,
     GoogleSearchWebScraper,
     URLFilter,
-    URLCollector,
 )
 from .crawler import Crawler
 from . import utils
-from .main import Flywheel
+from .main import run_flywheel
 
 __all__ = [
     "utils",
@@ -15,7 +14,6 @@ __all__ = [
     "GoogleSearchApiScraper",
     "GoogleSearchWebScraper",
     "URLFilter",
-    "Flywheel",
-    "URLCollector",
+    "run_flywheel",
     "Crawler",
 ]

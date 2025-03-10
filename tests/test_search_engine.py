@@ -18,7 +18,7 @@ def collect_results_worker(task_queue, max_tasks):
     results = []
     while len(results) < max_tasks:
         task = task_queue.get()
-        results.append(task["data"])
+        results.append(task["result"])
         print("[INFO] -- [COLLECTOR] :: COMPLETED:", len(results))
         with open(
             "./tests/data/test_search_engine/results.json", "w", encoding="utf-8"
@@ -31,15 +31,11 @@ def enqueue_task(queries, task_queue, thread_id):
         print(
             f"[ENQUEUE] -- [THREAD_ID:{thread_id}] -- [SENDING TASK] :: CURRENT:", query
         )
-        task_queue.put({"args": {"query": query}})
+        task_queue.put({"result": query})
 
 
 def get_queries():
-    queries = []
-    with open("./tests/queries.json", "r", encoding="utf-8") as query_file:
-        data = json.load(query_file)
-        for results in data:
-            queries.append(results["Title"])
+    queries = ["Hello World", "KTM Duke 230", "Iphone 16"]
     return queries
 
 

@@ -1,114 +1,170 @@
-import threading
-import random
-import itertools
+import json
+import logging
+from multiprocessing import Process, Manager, Queue
+from flywheel import QueryGenerator, GoogleSearchWebScraper, URLFilter, Crawler
 
-from .constants import DEFAULT_FLYWHEEL_CONFIG as default_config
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-from .url_collector import URLCollector
-from .query_generator import QueryGenerator
-class Flywheel:
-    
-    def __init__(self, **kwargs):
-        """Initialize Flywheel with default parameters."""
-        defaults = {
-            "number_of_threads": default_config["number_of_threads"],
-            "crawled_urls_limit": default_config["crawled_urls_limit"],
-            "total_urls_crawled": default_config["total_urls_crawled"],
-            "total_scrapers": default_config["total_scrapers"],
-            "urls_dir": default_config["urls_dir"],  # TESTING PURPOSE
-            "url_collector": [], # TESTING PURPOSE,
-            "urls": set(), # TESTING PURPOSE
-            "urls_lock": threading.Lock()  # Lock for thread safety
+def start_query_generator(task_queue: Queue, submit_task_queue: Queue):
+    """
+    Initializes and starts the QueryGenerator process.
+
+    Parameters:
+    task_queue (Queue): A multiprocessing Queue object used to pass tasks to the QueryGenerator process.
+    submit_task_queue (Queue): A multiprocessing Queue object used to pass tasks from the QueryGenerator process to the next process in the pipeline.
+
+    Returns:
+    None
+    """
+    with Manager() as manager:
+        config = {
+            "manager": manager,
+            "task_queue": task_queue,
+            "submit_task_queue": submit_task_queue,
         }
-        
-        config_kwargs = {**defaults, **kwargs}
-        
-        self.configure(**config_kwargs)
-        self.init_query_generator()
-        self.init_url_collector()
-        
-    def configure(self, **kwargs):
-        """Update the parameters of Flywheel."""
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-            
-    def init_query_generator(self):
-        """Initialize the QueryGenerator with the provided context."""
-        self.configure(query_generator = QueryGenerator())
-    
-    def init_url_collector(self):
-        """Initialize the URLCollector with the provided thread id."""
-        self.configure(url_collector = [])  # TESTING PURPOSE
-        for thread_id in range(1, self.total_scrapers + 1):
-            url_path = self.urls_dir + f"thread_{thread_id}.json"  # TESTING PURPOSE
-            self.url_collector.append(URLCollector(thread_id=thread_id, url_file_path=url_path))
-            
-        # Create a round-robin iterator
-        self.url_collector_iter = itertools.cycle(self.url_collector)
-    
-    def add_url(self, url):
-        """Safely add a URL to the set using a lock."""
-        with self.urls_lock:
-            self.urls.add(url)
-    
-    def increase_total_urls_crawled(self):
-        self.configure(total_urls_crawled = self.total_urls_crawled + 1)
-        return self
-        
-    def generate_queries(self, context):
-        return self.query_generator.generate_queries(context)
-    
-    def get_url_collector(self):
-        return next(self.url_collector_iter)  # Moves cyclically through collectors
-    
-    def collect_urls(self, queries):
-        """Collect URLs from the provided queries using the configured number of threads."""
-        
-        for query in queries:
-            url_collector = self.get_url_collector() # Get a random URL collector
-            for url in url_collector.collect_urls([query]):
-                self.add_url(url)  # Add the URL to the list of URLs
-                yield url  # Yield each URL as soon as it is collected
-    
-    def isExistingURL(self, url):
-        """Check if the provided URL is already existing in the list of URLs."""
-        with self.urls_lock:
-            return url in self.urls
-    
-    def crawl_url(self, url):
-        # crawler = Crawler({
-        # url
-        # }, storage='/home/aadey/workspace/data_enrichment/GiKA-Flywheel/flywheel/Crawler_py/storage',tor_browser_path='/root/old_server/PrabhathE2E/crawler-py-copy/Crawler-py/tor_browser')
-        # crawler.start()
-        # return crawler.results
-        return [] # TESTING PURPOSE
-    
-    def run_crawler(self, url):
-        """Run a crawler in a new thread for the given URL and process new contexts."""
-        if self.total_urls_crawled >= self.crawled_urls_limit:
-            return
+        logging.info("Starting Query Generator...")
+        query_generator = QueryGenerator(**config)
+        query_generator.start()
 
-        self.increase_total_urls_crawled()
+def start_search_engine(task_queue: Queue, submit_task_queue: Queue):
+    """
+    Initializes and starts the GoogleSearchWebScraper process.
 
-        def crawl_worker():
-            new_contexts = self.crawl_url(url)  # Get new contexts
-            if new_contexts:
-                for context in new_contexts:
-                    self.start_flywheel(context)  # Start a new Flywheel for each context
+    This function is responsible for creating and starting a new process that performs web scraping
+    using the GoogleSearchWebScraper class. It initializes the necessary configuration for the
+    GoogleSearchWebScraper instance and then starts the scraping process.
 
-        # Start a new thread for crawling the URL
-        crawler_thread = threading.Thread(target=crawl_worker)
-        crawler_thread.start()
+    Parameters:
+    task_queue (Queue): A multiprocessing Queue object used to pass tasks to the GoogleSearchWebScraper process.
+    submit_task_queue (Queue): A multiprocessing Queue object used to pass tasks from the GoogleSearchWebScraper process to the next process in the pipeline.
+
+    Returns:
+    None
+    """
+    with Manager() as manager:
+        config = {
+            "manager": manager,
+            "task_queue": task_queue,
+            "submit_task_queue": submit_task_queue,
+        }
+        logging.info("Starting Search Engine...")
+        scraper = GoogleSearchWebScraper(**config)
+        scraper.start()
+
+def start_url_filter(task_queue: Queue, submit_task_queue: Queue):
+    """
+    Initializes and starts the URLFilter process.
+
+    The URLFilter process is responsible for filtering and processing URLs obtained from the previous process in the pipeline.
+    It ensures that only relevant and valid URLs are passed to the next process for further crawling and data extraction.
+
+    Parameters:
+    task_queue (Queue): A multiprocessing Queue object used to receive tasks from the previous process in the pipeline.
+    submit_task_queue (Queue): A multiprocessing Queue object used to pass processed tasks to the next process in the pipeline.
+
+    Returns:
+    None
+    """
+    with Manager() as manager:
+        config = {
+            "manager": manager,
+            "task_queue": task_queue,
+            "submit_task_queue": submit_task_queue,
+        }
+        logging.info("Starting URL Filter...")
+        url_filter = URLFilter(**config)
+        url_filter.start()
+
+def start_crawler(task_queue: Queue, submit_task_queue: Queue):
+    """
+    Initializes and starts the Crawler process.
+
+    The Crawler process is responsible for crawling the web pages obtained from the URLFilter process.
+    It extracts relevant data from the crawled pages and passes the extracted information to the next process in the pipeline.
+
+    Parameters:
+    task_queue (Queue): A multiprocessing Queue object used to receive tasks from the URLFilter process.
+
+    submit_task_queue (Queue): A multiprocessing Queue object used to pass processed tasks to the next process in the pipeline.
+
+    Returns:
+    None
+    """
+    config = {
+        "task_queue": task_queue,
+        "submit_task_queue": submit_task_queue,
+    }
+    logging.info("Starting Crawler...")
+    crawler = Crawler(**config)
+    crawler.start()
+
+def start_collector(task_queue: Queue):
+    """
+    Collects results from the pipeline and stores them in a JSON file.
+    """
+    results = []
+    while True:
+        task = task_queue.get()
+        results.append(task)
+        logging.info(f"[COLLECTOR] Task Completed: {len(results)} - Collected: {task}")
+        
+        with open("./tests/data/test_flywheel/results.json", "w", encoding="utf8") as json_file:
+            json.dump(results, json_file, indent=4)
+
+def initialize_flywheel(initial_document: str, task_queue: Queue):
+    """
+    Initializes the Flywheel pipeline with the first document and adds it to the task queue.
+
+    This function takes an initial document and a task queue as input. It creates a task dictionary
+    with the initial document as the result, logs the initialization message, and adds the task to the
+    task queue. This function is intended to be called at the beginning of the Flywheel pipeline to
+    kickstart the data processing.
+
+    Parameters:
+    initial_document (str): The initial document that will be processed by the Flywheel pipeline.
+    task_queue (Queue): A multiprocessing Queue object used to pass tasks between different processes in the pipeline.
+
+    Returns:
+    None
+    """
+    task = {"result": initial_document}
+    logging.info(f"Initializing Flywheel with task: {task}")
+    task_queue.put(task)
     
-    def start_flywheel(self, context):
-        """Start a new Flywheel instance in a separate thread."""
-        def flywheel_worker():
-            queries = self.generate_queries(context)
-            for url in self.collect_urls(queries):
-                if not self.isExistingURL(url):
-                    self.urls.add(url)
-                    self.run_crawler(url)
+def run_flywheel(initial_document: str):
+    """
+    Runs the Flywheel pipeline with multiple processes for each component.
 
-        # Start a new thread for the Flywheel process
-        flywheel_thread = threading.Thread(target=flywheel_worker)
-        flywheel_thread.start()
+    The Flywheel pipeline is a multi-process data processing system designed to extract and analyze data from the web.
+    It consists of several components, each running in its own process, to perform tasks such as generating queries,
+    scraping web pages, filtering URLs, crawling web pages, and collecting results.
+
+    Parameters:
+    initial_document (str): The initial document that will be processed by the Flywheel pipeline.
+        This document can be any piece of information that will be used to generate initial queries.
+
+    Returns:
+    None
+    """
+    logging.info("Setting up task queues for Flywheel...")
+    query_generator_tq = Queue()
+    search_engine_tq = Queue()
+    url_filter_tq = Queue()
+    crawler_tq = Queue()
+    collector_tq = Queue()
+
+    processes = [
+        Process(target=start_query_generator, args=(query_generator_tq, search_engine_tq)),
+        Process(target=start_search_engine, args=(search_engine_tq, url_filter_tq)),
+        Process(target=start_url_filter, args=(url_filter_tq, crawler_tq)),
+        Process(target=start_crawler, args=(crawler_tq, collector_tq)),
+        Process(target=start_collector, args=(collector_tq,)),
+    ]
+
+    # Start all processes
+    for process in processes:
+        process.start()
+    
+    # Initialize the Flywheel with the first document
+    initialize_flywheel(initial_document, query_generator_tq)

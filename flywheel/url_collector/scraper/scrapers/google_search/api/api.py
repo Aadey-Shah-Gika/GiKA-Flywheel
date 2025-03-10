@@ -1,6 +1,8 @@
 from .constants import DEFAULT_URL_SCRAPPER_CONFIG as default_config
 from ....base_scrapper import BaseScraper
 
+# ! Dont use this API Scraper until we purchase it
+
 class GoogleSearchApiScraper(BaseScraper):
     def __init__(self, **kwargs):
         config = {

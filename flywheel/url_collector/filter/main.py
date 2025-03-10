@@ -1,16 +1,15 @@
 import json
 import logging
 import requests
-import pandas as pd
-import numpy as np
 from filelock import FileLock
-from threading import Lock
+from threading import Lock as ThreadLock
 from .constants import DEFAULT_URL_FILTER_CONFIG as default_config
-from .filter_load_balancer import FilterLoadBalancer
+from .load_balancer import FilterLoadBalancer
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s",
 )
 
 
@@ -21,21 +20,59 @@ class URLFilter(FilterLoadBalancer):
 
     def __init__(self, **kwargs):
         """Initialize the URLFilter with default parameters."""
-        defaults = {
-            "ann_store_urls": default_config["ann_store_urls"],
-            "snippet_length_threshold": default_config["snippet_length_threshold"],
-            "url_file_path": default_config["url_file_path"],
-        }
 
-        # Merge default values with user-provided values
-        config_kwargs = {**defaults, **kwargs}
-        self.configure(**config_kwargs)
+        # Create a logger for this class
+        self.logger = logging.getLogger(self.__class__.__name__)
 
-        # Initialize file locks for thread safety
-        self._file_pLock = FileLock(f"{self.url_file_path}.lock")
-        self._file_tLock = Lock()
+        # configuration parameters
+        config_keys = [
+            "ann_store_urls",  # base ann store service urls for http requests
+            "snippet_length_threshold",  # minimum snippet length
+            "url_file_path",  # file for storing urls' data
+        ]
 
+        # class variables' config dictionary
+        config = {}
+
+        for config_key in config_keys:
+            # set the config dictionary to the provided value or set it to default
+            config = kwargs.get(config_key, default_config[config_key])
+
+        # configure class variables with config
+        self.configure(**config)
+
+        # Initialize file locks for atomic operations
+        self.init_locks()
+
+        # Initialize parent class
         super().__init__(**kwargs)
+
+    def init_locks(self):
+        """
+        Initialize file locks for thread safety.
+
+        This function ensures the existence of the directory and file specified by `url_file_path`.
+        It then creates file locks for both process-level and thread-level synchronization.
+        If the directory does not exist, it is created.
+        If the file does not exist, an empty file is created.
+
+        Parameters:
+        - None
+
+        Returns:
+        - None
+
+        The function does not return any value. It initialize the instance attributes `_file_pLock` and `_file_tLock`.
+        """
+        try:
+            # Lock to synchronize file access across multiple processes
+            self._file_pLock = FileLock(f"{self.url_file_path}.lock")
+            
+            # Lock to synchronize file access across multiple threads
+            self._file_tLock = ThreadLock()
+        except FileNotFoundError as e:
+            self.logger.error(f"FILE NOT FOUND: {self.url_file_path}")
+            raise
 
     def configure(self, **kwargs):
         """
@@ -50,6 +87,7 @@ class URLFilter(FilterLoadBalancer):
         This method iterates through the key-value pairs in the kwargs dictionary and updates the corresponding attributes of the URLFilter instance.
         """
         for key, value in kwargs.items():
+            # self.key = value
             setattr(self, key, value)
         return self
 
@@ -76,9 +114,13 @@ class URLFilter(FilterLoadBalancer):
                 with open(self.url_file_path, "w", encoding="utf-8") as file:
                     json.dump(json_file, file, indent=4)
 
-            logging.info("URLs successfully saved to file.")
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            logging.error(f"Error saving URLs to file: {e}")
+            self.logger.info("URLs successfully saved to file.")
+        except FileNotFoundError as e:
+            self.logger.error(f"FILE NOT FOUND: {self.url_file_path}:\n{e}")
+            raise
+        except json.JSONDecodeError as e:
+            self.logger.error(f"Error decoding JSON from {self.url_file_path}:\n{e}")
+            raise
 
     def transform_url_query(self, query):
         """
@@ -95,11 +137,19 @@ class URLFilter(FilterLoadBalancer):
         This function takes a JSON query representing a URL and transforms it into a formatted query string for ANN search.
         The query string includes the title and snippet of the URL, separated by a horizontal rule.
         """
-        return f"""
-        Title: {query.get("title", "")}
-        \n==================================\n
-        Description: {query.get("snippet", "")}
-        """
+        try:
+            title = query.get("title", "")
+            snippet = query.get("snippet", "")
+
+            return f"Title: {title}\n" f"{'=' * 34}\n" f"Description: {snippet}"
+        except ValueError as e:
+            self.logger.error(
+                "Error while transforming URL query. "
+                "Possible invalid data format in 'title' or 'snippet'. "
+                f"Query data: {query}"
+                f"Exception: {e}"
+            )
+            raise
 
     def index_urls(self, data, ann_store_name):
         """
@@ -120,18 +170,23 @@ class URLFilter(FilterLoadBalancer):
         If any request exceptions occur, it logs an error message.
         """
         try:
+            # building URL for indexing the data to [ann_store_name]
             url = f"{self.ann_store_urls[ann_store_name]}/add"
+
+            # mentioning headers of the request
             headers = {"Content-Type": "application/json"}
+
+            # requesting ann store service to index the data to mentioned ann store in url
             response = requests.post(url, json={"data": data}, headers=headers)
 
             if response.status_code == 200:
-                logging.info(f"Successfully indexed URLs under {ann_store_name}.")
+                self.logger.info(f"Successfully indexed URLs under {ann_store_name}.")
             else:
-                logging.warning(
+                self.logger.warning(
                     f"Failed to index URLs. Status Code: {response.status_code}"
                 )
         except requests.RequestException as e:
-            logging.error(f"Request failed while indexing URLs: {e}")
+            self.logger.error(f"Request failed while indexing URLs: {e}")
 
     def preprocess_urls(self, urls):
         """
@@ -172,8 +227,8 @@ class URLFilter(FilterLoadBalancer):
         This function preprocesses the URLs, saves them to a file, and indexes them using the ANN store.
         If no URLs are provided, it logs an information message and returns the instance itself without any changes.
         """
-        if not urls:
-            logging.info("No URLs to add.")
+        if not urls or len(urls) == 0:
+            self.logger.info("No URLs to add.")
             return self
 
         preprocessed_urls = self.preprocess_urls(urls)
@@ -211,12 +266,13 @@ class URLFilter(FilterLoadBalancer):
             if response.status_code == 200:
                 return response.json().get("data", [])
 
-            logging.warning(
+            self.logger.warning(
                 f"ANN search failed with status code {response.status_code}."
             )
         except requests.RequestException as e:
-            logging.error(f"Error performing ANN search: {e}")
+            self.logger.error(f"Error performing ANN search: {e}")
 
+        # if anything failed while ANN Search [no neighbors]
         return [{"distance": 0, "id": -1}]
 
     def avg_similarity_score(self, nearest_neighbors):
@@ -289,6 +345,7 @@ class URLFilter(FilterLoadBalancer):
             similarity_score = self.get_similarity_score(nearest_neighbors)
 
             if similarity_score >= 0.5:
+                # Update the URL with the similarity scores and add it to the filtered results
                 url.update(
                     {
                         "similarity_score": similarity_score,
@@ -304,7 +361,7 @@ class URLFilter(FilterLoadBalancer):
 
         if filtered_results:
             self.add_urls(filtered_results)  # Store filtered URLs
-            logging.info(
+            self.logger.info(
                 f"Filtered {len(filtered_results)} URLs and added them to the index."
             )
 

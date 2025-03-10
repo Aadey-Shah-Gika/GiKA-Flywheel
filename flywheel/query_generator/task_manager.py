@@ -2,11 +2,16 @@ import os
 from datetime import datetime
 import logging
 
-from .constants import DEFAULT_LOAD_BALANCER_CONFIG as default_config, TASK_STORAGE_DIR
+from .constants import DEFAULT_TASK_MANAGER_CONFIG as default_config
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s",
+)
 
+
+# TODO: create a separate util for common utils
 def get_timestamp_str():
     """
     Generate a timestamp string in the format 'YYYY-MM-DD HH:MM:SS'.
@@ -38,14 +43,19 @@ class QueryGeneratorTaskManager:
             - submit_task_queue: Queue where processed tasks are submitted.
             - max_tasks_once (optional): Maximum tasks to process at once (default from config).
         """
+        
+        # Create a logger for this class
+        self.logger = logging.getLogger(self.__class__.__name__)
+        
         self.manager = kwargs['manager']
         self.task_queue = kwargs['task_queue']
         self.submit_task_queue = kwargs['submit_task_queue']
         
         # Set the max number of tasks that can be processed at once
         self.max_tasks_once = kwargs.get('max_tasks_once', default_config['max_tasks_once'])
+        self.task_storage_file = kwargs.get('task_storage_file', default_config['task_storage_file'])
         
-        logging.info("QueryGeneratorLoadBalancer initialized with max_tasks_once=%d", self.max_tasks_once)
+        self.logger.info("QueryGeneratorLoadBalancer initialized with max_tasks_once=%d", self.max_tasks_once)
     
     def save_tasks(self, tasks):
         """
@@ -54,16 +64,16 @@ class QueryGeneratorTaskManager:
         Parameters:
         - tasks (list): List of tasks to be saved.
         """
-        if not os.path.exists(TASK_STORAGE_DIR):
-            os.makedirs(TASK_STORAGE_DIR)  # Ensure the directory exists
+        if not os.path.exists(self.task_storage_file):
+            os.makedirs(self.task_storage_file)  # Ensure the directory exists
         
         file_name = f"context_{get_timestamp_str()}"
-        file_path = os.path.join(TASK_STORAGE_DIR, f"{file_name}.txt")
+        file_path = os.path.join(self.task_storage_file, f"{file_name}.txt")
         
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(str(tasks))
         
-        logging.info("Saved tasks to %s", file_path)
+        self.logger.info("Saved tasks to %s", file_path)
     
     def run(self, task):
         """
@@ -75,7 +85,7 @@ class QueryGeneratorTaskManager:
         Returns:
         - dict: Dictionary containing the original task and generated results.
         """
-        logging.info("Processing task: %s", str(task))
+        self.logger.info("Processing task: %s", str(task))
         
         results = self.generate_queries(task)  # Generate queries (assumes method is implemented)
         
@@ -84,7 +94,7 @@ class QueryGeneratorTaskManager:
             "result": results
         }
         
-        logging.info("Task processing completed: %s", str(response))
+        self.logger.info("Task processing completed: %s", str(response))
         return response
     
     def submit_task(self, task):
@@ -97,7 +107,7 @@ class QueryGeneratorTaskManager:
         Returns:
         - None
         """
-        logging.info("Submitting processed tasks...")
+        self.logger.info("Submitting processed tasks...")
         
         for i, queries in enumerate(task['result']):
             for query in queries:
@@ -106,30 +116,30 @@ class QueryGeneratorTaskManager:
                     "result": query
                 }
                 self.submit_task_queue.put(cur_task)
-                logging.info("Submitted task: %s", str(cur_task))
+                self.logger.info("Submitted task: %s", str(cur_task))
     
     def start(self):
         """
         Start processing tasks from the queue in batches.
         It collects multiple tasks if possible before processing to maximize efficiency.
         """
-        logging.info("QueryGeneratorLoadBalancer started")
+        self.logger.info("QueryGeneratorLoadBalancer started")
         
         while True:
             raw_tasks = self.task_queue.get()  # Wait for a task
             tasks = raw_tasks['result']
             
-            logging.info("Received new batch of tasks")
+            self.logger.info("Received new batch of tasks")
             
             # Try to accumulate tasks up to max_tasks_once
             while len(tasks) < self.max_tasks_once and not self.task_queue.empty():
                 extra_tasks = self.task_queue.get()
                 tasks.extend(extra_tasks['result'])
-                logging.info("Added extra tasks to batch, new size: %d", len(tasks))
+                self.logger.info("Added extra tasks to batch, new size: %d", len(tasks))
             
             self.save_tasks(tasks)  # Save tasks to file for tracking
             
             response = self.run(tasks)  # Process the tasks
             self.submit_task(response)  # Submit processed tasks
             
-            logging.info("Batch processing completed and results submitted")
+            self.logger.info("Batch processing completed and results submitted")

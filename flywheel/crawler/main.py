@@ -10,14 +10,16 @@ from flywheel.utils.summary_generator import SummaryGenerator
 from .constants import (
     DEFAULT_CRAWLER_WRAPPER_CONFIG as default_config,
     BLOCKED_DOMAINS,
-    TASK_STORAGE_DIR,
 )
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s",
 )
 
+
+# TODO: Create a separate util for file operations
 
 def read_json_file(filename):
     """
@@ -42,7 +44,6 @@ def read_json_file(filename):
     except json.JSONDecodeError as e:
         logging.error(f"Error decoding JSON from {filename}: {e}")
         return {}
-
 
 def write_json_file(filename, data):
     """
@@ -73,6 +74,10 @@ class Crawler:
     """
 
     def __init__(self, **kwargs):
+        
+        # Create a logger for this class
+        self.logger = logging.getLogger(self.__class__.__name__)
+        
         config = {
             "task_queue": kwargs["task_queue"],
             "submit_task_queue": kwargs["submit_task_queue"],
@@ -82,6 +87,7 @@ class Crawler:
             ),
             "urls_queue": Queue(),
             "summary_generator": SummaryGenerator(),
+            "task_storage_file": default_config["task_storage_file"],
         }
         self.configure(**config)
 
@@ -114,7 +120,7 @@ class Crawler:
         Returns:
         - None: This method does not return any value. It logs the task result and adds it to the `submit_task_queue`.
         """
-        logging.info(f"Submitting task result: {results}")
+        self.logger.info(f"Submitting task result: {results}")
         self.submit_task_queue.put(results)
 
     def save_tasks(self, tasks):
@@ -135,15 +141,15 @@ class Crawler:
         - IOError: If there is an error writing to the file.
         """
         try:
-            data = read_json_file(TASK_STORAGE_DIR)
+            data = read_json_file(self.task_storage_file)
         except FileNotFoundError:
             data = []
 
         data.append(tasks)
 
-        write_json_file(TASK_STORAGE_DIR, data)
+        write_json_file(self.task_storage_file, data)
 
-        logging.info("Tasks saved successfully.")
+        self.logger.info("Tasks saved successfully.")
 
     def get_crawl_status(self, url):
         """
@@ -166,7 +172,7 @@ class Crawler:
             response.raise_for_status()
             return response.json()
         except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
-            logging.error(f"Failed to fetch crawl status for {url}: {e}")
+            self.logger.error(f"Failed to fetch crawl status for {url}: {e}")
             return None
 
     def start_content_collector(self):
@@ -248,7 +254,7 @@ class Crawler:
             response.raise_for_status()
             return True
         except requests.exceptions.RequestException as e:
-            logging.error(f"Failed to start crawling for {url}: {e}")
+            self.logger.error(f"Failed to start crawling for {url}: {e}")
             return False
 
     @staticmethod
@@ -303,7 +309,7 @@ class Crawler:
         """
         content_collector_process = Process(target=self.start_content_collector)
         content_collector_process.start()
-        logging.info("Content collector process started.")
+        self.logger.info("Content collector process started.")
 
     def start(self):
         """

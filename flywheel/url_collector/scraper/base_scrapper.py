@@ -7,8 +7,10 @@ from .load_balancer import ScrapperLoadBalancer
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s",
 )
+
 
 class BaseScraper(ScrapperLoadBalancer):
     """
@@ -20,6 +22,11 @@ class BaseScraper(ScrapperLoadBalancer):
         """
         Initializes the scraper with default or provided configuration values.
         """
+
+        # Create a logger for this class
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        # configuration parameters
         config_keys = [
             "batch_size",
             "url_limit",
@@ -58,7 +65,7 @@ class BaseScraper(ScrapperLoadBalancer):
         Resets the remaining fetches counter to a random value within the configured range.
         Introduces a random delay after resetting.
         """
-        logging.info("Resetting remaining fetches counter.")
+        self.logger.info("Resetting remaining fetches counter.")
 
         self.set_remaining_fetches(
             random.randint(
@@ -78,7 +85,7 @@ class BaseScraper(ScrapperLoadBalancer):
         """
         Sets the remaining fetches counter and resets if it falls below zero.
         """
-        logging.info(f"Setting remaining fetches: {remaining_fetches}")
+        self.logger.info(f"Setting remaining fetches: {remaining_fetches}")
 
         self.configure(remaining_fetches=remaining_fetches)
 
@@ -90,7 +97,7 @@ class BaseScraper(ScrapperLoadBalancer):
         """
         Decrements the remaining fetches counter and applies a wait time between fetches.
         """
-        logging.info("Decrementing remaining fetches.")
+        self.logger.info("Decrementing remaining fetches.")
 
         self.set_remaining_fetches(self.remaining_fetches - 1)
 
@@ -110,7 +117,7 @@ class BaseScraper(ScrapperLoadBalancer):
         Initializes the remaining fetches counter to a random value within the configured range.
         """
 
-        logging.info("Initializing remaining fetches.")
+        self.logger.info("Initializing remaining fetches.")
 
         self.set_remaining_fetches(
             random.randint(
@@ -128,7 +135,7 @@ class BaseScraper(ScrapperLoadBalancer):
         """
         Executes a search query with retry logic in case of failures.
         """
-        logging.info(f"Executing query: {query}")
+        self.logger.info(f"Executing query: {query}")
 
         # Try fetching query results several times to overcome unexpected failures
         for attempt in range(self.max_request_retries):
@@ -138,12 +145,12 @@ class BaseScraper(ScrapperLoadBalancer):
                 self.decrement_remaining_fetches()
                 return result
             except Exception as e:
-                logging.warning(
+                self.logger.warning(
                     f"Error executing query '{query}', Attempt {attempt + 1} of {self.max_request_retries}: {str(e)}"
                 )
                 continue
 
-        logging.error(f"Exceeded maximum retry attempts for query: {query}")
+        self.logger.error(f"Exceeded maximum retry attempts for query: {query}")
 
         raise Exception("Exceeded maximum retry attempts for execute_query")
 
@@ -152,14 +159,14 @@ class BaseScraper(ScrapperLoadBalancer):
         Executes a scraper search for a given query and handles failures.
         """
 
-        logging.info(f"Running scraper for query: {query}")
+        self.logger.info(f"Running scraper for query: {query}")
 
         num_results_per_query = num_results_per_query or self.url_limit
         try:
             result = self.execute_query(query, num_results_per_query)
             return result
         except Exception as e:
-            logging.error(f"Query failed: {query}, Error: {str(e)}")
+            self.logger.error(f"Query failed: {query}, Error: {str(e)}")
             result = {"error": str(e), "status": 400}
             self.unsuccessful_queries.append(query)
             return result
